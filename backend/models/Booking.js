@@ -69,6 +69,19 @@ const bookingSchema = new mongoose.Schema({
     timestamps: true
 });
 
+bookingSchema.statics.checkAvailability = async function(hostelId, checkInDate, checkOutDate, roomType) {
+    return await this.find({
+        hostel: hostelId,
+        roomType: roomType,
+        status: { $ne: 'cancelled' },
+        $or: [
+            {
+                checkInDate: { $lt: checkOutDate },
+                checkOutDate: { $gt: checkInDate }
+            }
+        ]
+    });
+};
 bookingSchema.index({ student: 1, createdAt: -1 });
 bookingSchema.index({ hostel: 1, status: 1 });
 bookingSchema.index({ checkInDate: 1, checkOutDate: 1 });

@@ -4,11 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "test": "echo \"Error: no test specified\" && exit 1",
-  "start": "nodemon index.js",
-  "dev": "nodemon index.js"
-},
-
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
   "author": "Muhammad Danish Azeem",
   "license": "MIT",
   "dependencies": {
