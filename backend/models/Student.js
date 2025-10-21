@@ -55,11 +55,13 @@ const StudentSchema = new Schema({
     },
     user:{
         type:Schema.Types.ObjectId,
-        ref:'user'
+        ref:'user',
+        required: false
     },
     hostel:{
         type:Schema.Types.ObjectId,
-        ref:'hostel'
+        ref:'hostel',
+        required: false
     },
     date:{
         type:Date,

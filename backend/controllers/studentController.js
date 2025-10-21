@@ -1,6 +1,8 @@
 const { generateToken, verifyToken } = require('../utils/auth');
 const { validationResult } = require('express-validator');
-const { Student, Hostel, User } = require('../models');
+const Student = require('../models/Student');
+const Hostel = require('../models/Hostel');
+const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const Parser = require('json2csv').Parser;
 
@@ -26,6 +28,7 @@ const registerStudent = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         let user = new User({
+            name,
             email,
             password: hashedPassword,
             isAdmin: false

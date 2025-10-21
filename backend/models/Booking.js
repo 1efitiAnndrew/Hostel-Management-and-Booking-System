@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
-import mongoose from 'mongoose';
 
 const bookingSchema = new mongoose.Schema({
     student: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Student',
         required: true
     },
     hostel: {

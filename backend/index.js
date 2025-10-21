@@ -2,6 +2,7 @@ const express = require('express')
 const connectDB = require('./utils/conn')
 const cors = require('cors')
 
+
 const app = express()
 const port = 3000
 
@@ -20,6 +21,9 @@ app.use('/api/messoff', require('./routes/messoffRoutes'));
 app.use('/api/request', require('./routes/requestRoutes'));
 app.use('/api/attendance', require('./routes/attendanceRoutes'));
 app.use('/api/suggestion', require('./routes/suggestionRoutes'));
+app.use('/api/booking', require('./routes/bookingRoutes'));
+app.use('/api/hostel', require('./routes/hostelRoutes'));
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
