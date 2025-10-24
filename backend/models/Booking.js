@@ -11,10 +11,20 @@ const bookingSchema = new mongoose.Schema({
         ref: 'Hostel',
         required: true
     },
+    room: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Room'
+    },
+    roomNumber: String,
     roomType: {
         type: String,
-        enum: ['single', 'double', 'triple'],
-        required: true
+        required: true,
+        enum: ['single', 'double', 'triple', 'dormitory']
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected', 'confirmed', 'checked-in', 'checked-out', 'cancelled'],
+        default: 'pending'
     },
     checkInDate: {
         type: Date,
@@ -24,67 +34,40 @@ const bookingSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    duration: {
-        type: Number, // in days
-        required: true
-    },
-    amount: {
-        type: Number,
-        required: true,
-        min: 0
-    },
-    status: {
-        type: String,
-        enum: ['pending', 'confirmed', 'cancelled', 'completed'],
-        default: 'pending'
-    },
+    duration: Number,
+    amount: Number,
+    paymentMethod: String,
+    paymentProof: String,
     paymentStatus: {
         type: String,
-        enum: ['pending', 'paid', 'failed', 'refunded'],
+        enum: ['pending', 'paid', 'partial', 'refunded'],
         default: 'pending'
     },
-    paymentMethod: {
-        type: String,
-        enum: ['mobile_money','cash'],
-        required: true
-    },
-    paymentProof: {
-        type: String
-    },
-    managerNotes: {
-        type: String
-    },
-    cancellationReason: {
-        type: String
-    },
-    cancelledAt: {
-        type: Date
-    },
-    isActive: {
-        type: Boolean,
-        default: true
-    }
+    
+    // Manager approval fields
+    approvedAt: Date,
+    approvedBy: String,
+    rejectedAt: Date,
+    rejectedBy: String,
+    rejectionReason: String,
+    
+    // Room assignment
+    assignedAt: Date,
+    
+    // Check-in/check-out
+    checkedInAt: Date,
+    checkedOutAt: Date,
+    
+    // Cancellation
+    cancelledAt: Date,
+    cancellationReason: String,
+    
+    // Manager notes
+    managerNotes: String
+    
 }, {
     timestamps: true
 });
 
-bookingSchema.statics.checkAvailability = async function(hostelId, checkInDate, checkOutDate, roomType) {
-    return await this.find({
-        hostel: hostelId,
-        roomType: roomType,
-        status: { $ne: 'cancelled' },
-        $or: [
-            {
-                checkInDate: { $lt: checkOutDate },
-                checkOutDate: { $gt: checkInDate }
-            }
-        ]
-    });
-};
-bookingSchema.index({ student: 1, createdAt: -1 });
-bookingSchema.index({ hostel: 1, status: 1 });
-bookingSchema.index({ checkInDate: 1, checkOutDate: 1 });
-
+// Make sure this line is exactly like this:
 module.exports = mongoose.model('Booking', bookingSchema);
-
-

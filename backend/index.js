@@ -23,6 +23,7 @@ app.use('/api/attendance', require('./routes/attendanceRoutes'));
 app.use('/api/suggestion', require('./routes/suggestionRoutes'));
 app.use('/api/booking', require('./routes/bookingRoutes'));
 app.use('/api/hostel', require('./routes/hostelRoutes'));
+app.use('/api/room', require('./routes/roomRoutes'));
 
 
 app.listen(port, () => {

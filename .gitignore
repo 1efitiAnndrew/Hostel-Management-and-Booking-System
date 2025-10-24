@@ -1,7 +1,16 @@
-node_modules/
-.env
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.DS_Store
-Thumbs.db
+{
+    "student": "Efiti Andrew",
+    "hostel": "Olympia Hostel",
+    "roomType": "Double",
+    "checkInDate": "2025-07-20",
+    "checkOutDate": "2025-11-20",
+    "duration": 4,
+    "amount": 500000,
+    "status":"confirmed",
+    "paymentStatus":"paid",
+    "paymentMethod": "mobile_money",
+    "paymentProof": "https://Andrew.com/payment-proof.jpg",
+    "managerNotes":"Your welcome",
+    "cancellationReason":"N/A",
+    "cancelledAt":"N/A"
+}

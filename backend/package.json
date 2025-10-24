@@ -18,9 +18,10 @@
     "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.0",
     "mongodb": "^6.20.0",
-    "mongoose": "^7.1.0"
+    "mongoose": "^7.1.0",
+    "nodemailer": "^7.0.9"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^3.1.10"
   }
 }
