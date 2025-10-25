@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --clr-primary: #f0fdf4; /* green-50, aligns with gradient */
+  --primary: #15803d; /* green-600, matches buttons */
+  --secondary: #4b5563; /* gray-600, matches secondary text */
+}
+
+body {
+  background: linear-gradient(to bottom right, #f0fdf4, #dcfce7, #bbf7d0); /* from-green-50 via-green-100 to-green-200 */
+  animation: gradientFlow 20s linear infinite;
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--secondary) var(--clr-primary);
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 5px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 5px;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-left: 5px solid var(--primary);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #fff; /* Matches Input component's text-white */
+  transition: background-color 5000000s ease-in-out 0s;
+  background-color: #166534 !important; /* green-800, matches Input bg */
+}
+
+@layer base {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+/* Animation for gradient flow */
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
