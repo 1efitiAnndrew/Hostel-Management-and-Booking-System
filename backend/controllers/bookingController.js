@@ -40,11 +40,11 @@ const createBooking = async (req, res) => {
         await booking.populate('hostel', 'name location');
         await booking.populate('student', 'name email phone');
 
-        // Send email notification to student
+        // FIX: Pass all 3 required parameters to the email template
         await sendEmail(
             studentDoc.email,
             'bookingSubmitted',
-            [studentDoc.name, booking._id]
+            [studentDoc.name, booking._id, hostelDoc.name] // Added hostelDoc.name as 3rd parameter
         );
 
         // Send notification to manager if email is configured
@@ -53,7 +53,7 @@ const createBooking = async (req, res) => {
             await sendEmail(
                 process.env.MANAGER_EMAIL,
                 'managerNotification',
-                [pendingCount]
+                [pendingCount, hostelDoc.name] // Added hostelDoc.name as 2nd parameter
             );
         }
 
@@ -64,6 +64,7 @@ const createBooking = async (req, res) => {
         });
 
     } catch (error) {
+        console.error('Booking creation error:', error);
         res.status(500).json({
             success: false,
             message: error.message
@@ -209,11 +210,11 @@ const approveBooking = async (req, res) => {
         await booking.populate('student', 'name email');
         await booking.populate('hostel', 'name');
 
-        // Send approval email to student
+        // FIX: Pass all 4 required parameters to the email template
         await sendEmail(
             booking.student.email,
             'bookingApproved',
-            [booking.student.name, booking._id, null] // roomNumber will be null initially
+            [booking.student.name, booking._id, null, booking.hostel.name] // Added hostel.name as 4th parameter
         );
 
         res.json({
@@ -274,11 +275,11 @@ const rejectBooking = async (req, res) => {
         booking.rejectedBy = req.user?.id || 'manager';
         await booking.save();
 
-        // Send rejection email to student
+        // FIX: Pass all 4 required parameters to the email template
         await sendEmail(
             booking.student.email,
             'bookingRejected',
-            [booking.student.name, booking._id, rejectionReason || 'Not specified']
+            [booking.student.name, booking._id, rejectionReason || 'Not specified', booking.hostel.name] // Added hostel.name as 4th parameter
         );
 
         res.json({
@@ -342,20 +343,21 @@ const bulkUpdateBookings = async (req, res) => {
         // Send emails for bulk actions
         if (result.modifiedCount > 0) {
             const bookings = await Booking.find({ _id: { $in: bookingIds } })
-                .populate('student', 'name email');
+                .populate('student', 'name email')
+                .populate('hostel', 'name');
             
             for (const booking of bookings) {
                 if (action === 'approve') {
                     await sendEmail(
                         booking.student.email,
                         'bookingApproved',
-                        [booking.student.name, booking._id, null]
+                        [booking.student.name, booking._id, null, booking.hostel.name] // Added hostel.name
                     );
                 } else {
                     await sendEmail(
                         booking.student.email,
                         'bookingRejected',
-                        [booking.student.name, booking._id, rejectionReason || 'Not specified']
+                        [booking.student.name, booking._id, rejectionReason || 'Not specified', booking.hostel.name] // Added hostel.name
                     );
                 }
             }

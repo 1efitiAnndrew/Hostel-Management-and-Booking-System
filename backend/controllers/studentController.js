@@ -7,62 +7,88 @@ const bcrypt = require('bcryptjs');
 const Parser = require('json2csv').Parser;
 
 const registerStudent = async (req, res) => {
-    // console.log(req.body);
     let success = false;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        // console.log(errors);
-        return res.status(400).json({success, errors: errors.array() });
-    }
-
-    const { name, cms_id, room_no, batch, dept, course, email, father_name, contact, address, dob, cnic, hostel, password } = req.body;
+    
     try {
-        let student = await Student.findOne({ cms_id });
-
-        if (student) {
-            return res.status(400).json({success, errors: [{ msg: 'Student already exists' }] });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success, errors: errors.array() });
         }
-        let shostel = await Hostel.findOne({ name: hostel });
 
+        const { 
+            name, cms_id, room_no, batch, dept, course, email, 
+            father_name, contact, address, dob, cnic, hostel, password 
+        } = req.body;
+
+        // Check if student exists by CMS ID
+        let student = await Student.findOne({ cms_id });
+        if (student) {
+            return res.status(400).json({ 
+                success, 
+                errors: [{ msg: 'Student already exists' }] 
+            });
+        }
+
+        // Check if student exists by email
+        student = await Student.findOne({ email });
+        if (student) {
+            return res.status(400).json({ 
+                success, 
+                errors: [{ msg: 'Email already exists' }] 
+            });
+        }
+
+        // Find hostel
+        const shostel = await Hostel.findOne({ name: hostel });
+        if (!shostel) {
+            return res.status(400).json({ 
+                success, 
+                errors: [{ msg: 'Hostel not found' }] 
+            });
+        }
+
+        // Hash password and create user
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        let user = new User({
+        const user = new User({
             name,
             email,
             password: hashedPassword,
-            isAdmin: false
+            isAdmin: false,
+            role: 'student'
         });
 
         await user.save();
         
+        // Create student
         student = new Student({
             name,
-            cms_id,
-            room_no,
-            batch,
+            cms_id: parseInt(cms_id),
+            room_no: parseInt(room_no),
+            batch: parseInt(batch),
             dept,
             course,
             email,
             father_name,
             contact,
             address,
-            dob,
+            dob: new Date(dob),
             cnic,
-            user: user.id,
-            hostel: shostel.id
+            user: user._id,
+            hostel: shostel._id
         });
-        
 
         await student.save();
 
         success = true;
-        res.json({success, student });
+        res.json({ success, student });
+        
     } catch (err) {
-        res.status(500).json({success, errors: 'Server error'});
+        console.error('Registration error:', err.message);
+        res.status(500).json({ success, errors: 'Server error' });
     }
-}
-
+};
 const getStudent = async (req, res) => {
     try {
         // console.log(req.body);
@@ -109,9 +135,9 @@ const getAllStudents = async (req, res) => {
 
     try {
 
-        const shostel = await Hostel.findById(hostel);
+        const hostel = await Hostel.findById(hostel);
 
-        const students = await Student.find({ hostel: shostel.id }).select('-password');
+        const students = await Student.find({ hostel: hostel.id }).select('-password');
 
         success = true;
         res.json({success, students});
