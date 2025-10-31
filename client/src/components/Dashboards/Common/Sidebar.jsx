@@ -3,12 +3,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 
 Sidebar.propTypes = {
-  links: PropTypes.shape({
-    text: PropTypes.string.isRequired,
-    url: PropTypes.string.isRequired,
-    for: PropTypes.string.isRequired,
-    svg: PropTypes.element.isRequired,
-  }).isRequired,
+  links: PropTypes.arrayOf(
+    PropTypes.shape({
+      text: PropTypes.string.isRequired,
+      url: PropTypes.string.isRequired,
+      for: PropTypes.string,
+      svg: PropTypes.element.isRequired,
+    })
+  ).isRequired,
 };
 
 function Sidebar({ links }) {
@@ -16,6 +18,7 @@ function Sidebar({ links }) {
   let logout = () => {
     localStorage.removeItem("student");
     localStorage.removeItem("token");
+    localStorage.removeItem("admin"); // Also remove admin on logout
     navigate("/");
   };
   const [isOpen, setIsOpen] = useState(true);
@@ -75,7 +78,7 @@ function Sidebar({ links }) {
         }`}
       >
         <Link
-          to={`/${links[0].for}-dashboard`}
+          to={`/admin-dashboard`}
           className="py-4 px-4 md:py-5 lg:py-4 gap-2 bg-green-950 flex items-center text-2xl"
         >
           <svg
@@ -95,19 +98,18 @@ function Sidebar({ links }) {
           <span className="md:hidden lg:inline">Dashboard</span>
         </Link>
         <div className="flex flex-col space-y-1 text-2xl text-white">
-          {/*eslint-disable-next-line react/prop-types*/}
           {links.map((link) => (
             <Link
               to={link.url}
               key={link.text}
               className={`py-2 px-4 flex items-center gap-2 ${
                 location.pathname === link.url
-                  ? "text-blue-500"
-                  : "hover:text-blue-500"
-              }`}
+                  ? "text-blue-500 bg-green-900"
+                  : "hover:text-blue-500 hover:bg-green-900"
+              } transition-colors duration-200`}
             >
               {link.svg}
-              {link.text}
+              <span className="md:hidden lg:inline">{link.text}</span>
             </Link>
           ))}
         </div>
@@ -131,7 +133,7 @@ function Sidebar({ links }) {
                 d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
               />
             </svg>
-            Log Out
+            <span className="md:hidden lg:inline">Log Out</span>
           </button>
         </div>
       </div>

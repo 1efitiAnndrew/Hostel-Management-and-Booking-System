@@ -26,6 +26,7 @@ import AdminSuggestions from './components/Dashboards/AdminDashboard/Suggestions
 import AdminSettings from './components/Dashboards/AdminDashboard/Settings'
 import AllStudents from "./components/Dashboards/AdminDashboard/AllStudents";
 import AdminMess from "./components/Dashboards/AdminDashboard/MessOff";
+import AdminHostelPage from "./components/Dashboards/AdminDashboard/AdminHostelPage";
 
 function App() {
   return (
@@ -61,6 +62,7 @@ function App() {
           <Route path="settings" element={<AdminSettings/>} />
           <Route path="all-students" element={<AllStudents/>}/>
           <Route path="mess" element={<AdminMess />} />
+          <Route path="hostel" element={<AdminHostelPage />} />
         </Route>
       </Routes>
     </>

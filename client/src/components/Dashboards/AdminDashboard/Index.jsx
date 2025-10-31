@@ -4,7 +4,7 @@ import { Topbar } from "../Common/Topbar";
 import { useEffect, useState } from "react";
 
 export default function Index() {
-  const dashboard = "student";
+  const dashboard = "admin"; // Changed from "student" to "admin"
   const links = [
     {
       text: "Home",
@@ -28,8 +28,72 @@ export default function Index() {
       ),
     },
     {
+      text: "Hostels",
+      url: "/admin-dashboard/hostel",
+      for: dashboard,
+      svg: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="w-6 h-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205l3 1m1.5.5l-1.5-.5M6.75 7.364V3h-3v18m3-13.636l10.5-3.819"
+          />
+        </svg>
+      ),
+    },
+    {
+      text: "Room",
+      url: "/admin-dashboard/rooms",
+      for: dashboard,
+      svg: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="w-6 h-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
+          />
+        </svg>
+      ),
+    },
+    {
+      text: "Booking",
+      url: "/admin-dashboard/bookings",
+      for: dashboard,
+      svg: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="w-6 h-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"
+          />
+        </svg>
+      ),
+    },
+    {
       text: "Register Student",
       url: "/admin-dashboard/register-student",
+      for: dashboard,
       svg: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -50,6 +114,7 @@ export default function Index() {
     {
       text: "Attendance",
       url: "/admin-dashboard/attendance",
+      for: dashboard,
       svg: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -70,6 +135,7 @@ export default function Index() {
     {
       text: "Mess",
       url: "/admin-dashboard/mess",
+      for: dashboard,
       svg: (
         <svg
           className="h-7 w-7"
@@ -89,6 +155,7 @@ export default function Index() {
     {
       text: "Invoices",
       url: "/admin-dashboard/invoices",
+      for: dashboard,
       svg: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -109,6 +176,7 @@ export default function Index() {
     {
       text: "Complaints",
       url: "/admin-dashboard/complaints",
+      for: dashboard,
       svg: (
         <svg
           className="h-6 w-6"
@@ -131,6 +199,7 @@ export default function Index() {
     {
       text: "Suggestions",
       url: "/admin-dashboard/suggestions",
+      for: dashboard,
       svg: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -151,6 +220,7 @@ export default function Index() {
     {
       text: "All Students",
       url: "/admin-dashboard/all-students",
+      for: dashboard,
       svg: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -184,8 +254,8 @@ export default function Index() {
   return (
     <div className="flex">
       <Sidebar links={links} />
-      <Topbar name={admin.name} notifications={notifications} />
-      <div className="w-full bg-stone-900 h-screen">
+      <Topbar name={admin?.name || "Admin"} notifications={notifications} />
+      <div className="w-full bg-stone-900 min-h-screen">
         <Outlet />
       </div>
     </div>

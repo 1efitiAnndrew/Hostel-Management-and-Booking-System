@@ -1,7 +1,8 @@
-import Hostel from '../models/Hostel.js';
+const Hostel = require('../models/Hostel');
+const Booking = require('../models/Booking');
 
 // Get all hostels with search and filter
-export const getHostels = async (req, res) => {
+const getHostels = async (req, res) => {
     try {
         const { 
             search, 
@@ -43,8 +44,6 @@ export const getHostels = async (req, res) => {
                 filter.roomTypes.$elemMatch.available = { $gte: parseInt(minAvailable) };
             }
         }
-        
-        
 
         const hostels = await Hostel.find(filter)
             .select('name location rooms capacity vacant roomTypes amenities images contact')
@@ -84,10 +83,9 @@ export const getHostels = async (req, res) => {
 };
 
 // Get single hostel details
-export const getHostel = async (req, res) => {
+const getHostel = async (req, res) => {
     try {
-        const hostel = await Hostel.findById(req.params.id)
-            .populate('manager', 'name email phone');
+        const hostel = await Hostel.findById(req.params.id);
 
         if (!hostel) {
             return res.status(404).json({
@@ -109,7 +107,7 @@ export const getHostel = async (req, res) => {
 };
 
 // Check hostel availability
-export const checkAvailability = async (req, res) => {
+const checkAvailability = async (req, res) => {
     try {
         const { roomType, checkInDate, checkOutDate } = req.body;
         
@@ -151,7 +149,7 @@ export const checkAvailability = async (req, res) => {
 };
 
 // Create hostel
-export const createHostel = async (req, res) => {
+const createHostel = async (req, res) => {
     try {
         const hostelData = {
             ...req.body
@@ -173,7 +171,7 @@ export const createHostel = async (req, res) => {
 };
 
 // Update hostel
-export const updateHostel = async (req, res) => {
+const updateHostel = async (req, res) => {
     try {
         const hostel = await Hostel.findByIdAndUpdate(
             req.params.id, 
@@ -202,7 +200,7 @@ export const updateHostel = async (req, res) => {
 };
 
 // Delete hostel
-export const deleteHostel = async (req, res) => {
+const deleteHostel = async (req, res) => {
     try {
         const hostel = await Hostel.findByIdAndDelete(req.params.id);
 
@@ -224,8 +222,9 @@ export const deleteHostel = async (req, res) => {
         });
     }
 };
+
 // Search available rooms with detailed filtering
-export const searchRooms = async (req, res) => {
+const searchRooms = async (req, res) => {
     try {
         const { 
             checkInDate, 
@@ -238,7 +237,7 @@ export const searchRooms = async (req, res) => {
         } = req.query;
 
         // Build base filter
-        let filter = { isActive: true };
+        let filter = {};
         
         if (location) {
             filter.location = { $regex: location, $options: 'i' };
@@ -307,4 +306,14 @@ export const searchRooms = async (req, res) => {
             message: error.message
         });
     }
+};
+
+module.exports = {
+    getHostels,
+    getHostel,
+    checkAvailability,
+    createHostel,
+    updateHostel,
+    deleteHostel,
+    searchRooms
 };

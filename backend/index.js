@@ -1,17 +1,25 @@
-const express = require('express')
-const connectDB = require('./utils/conn')
-const cors = require('cors')
+const express = require('express');
+const connectDB = require('./utils/conn');
+const cors = require('cors');
 
+const app = express();
+const port = 3000;
 
-const app = express()
-const port = 3000
-
+// Connect to database
 connectDB();
 
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    origin: 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
+// Middleware
 app.use(express.json({ extended: false }));
 
+// Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/student', require('./routes/studentRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
@@ -25,7 +33,15 @@ app.use('/api/booking', require('./routes/bookingRoutes'));
 app.use('/api/hostel', require('./routes/hostelRoutes'));
 app.use('/api/room', require('./routes/roomRoutes'));
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'Server is running',
+        timestamp: new Date().toISOString()
+    });
+});
 
+// Start server
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+    console.log(`Server running on port ${port}`);
+});

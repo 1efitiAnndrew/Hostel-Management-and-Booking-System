@@ -1,11 +1,89 @@
+const mongoose = require('mongoose');
 const { generateToken, verifyToken } = require('../utils/auth');
 const { validationResult } = require('express-validator');
-const Student = require('../models/Student');
-const Hostel = require('../models/Hostel');
-const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const Parser = require('json2csv').Parser;
 
+// Import models directly to ensure they're registered
+const Student = require('../models/Student');
+const User = require('../models/User');
+
+// IMPORTANT: Import Hostel model directly and register it if needed
+let Hostel;
+try {
+    Hostel = require('../models/Hostel');
+} catch (error) {
+    console.error('Error importing Hostel model:', error);
+    // If import fails, try to get it from mongoose models
+    Hostel = mongoose.models.Hostel;
+}
+
+// If Hostel is still not available, register it manually
+if (!Hostel && mongoose.models.Hostel) {
+    Hostel = mongoose.models.Hostel;
+}
+
+console.log('Hostel model available:', !!Hostel);
+console.log('Available mongoose models:', Object.keys(mongoose.models));
+
+const getAllStudents = async (req, res) => {
+    let success = false;
+    
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({success, errors: errors.array() });
+        }
+
+        const { hostel } = req.body;
+
+        console.log('Received hostel ID:', hostel);
+
+        // Check if Hostel model is available
+        if (!Hostel) {
+            console.error('Hostel model not available');
+            // Try to require it again
+            try {
+                Hostel = require('../models/Hostel');
+            } catch (error) {
+                return res.status(500).json({ 
+                    success, 
+                    errors: [{ msg: 'Hostel model not available: ' + error.message }] 
+                });
+            }
+        }
+
+        // Find the hostel by ID
+        const foundHostel = await Hostel.findById(hostel);
+        console.log('Found hostel:', foundHostel);
+
+        if (!foundHostel) {
+            return res.status(400).json({ 
+                success, 
+                errors: [{ msg: 'Hostel not found with ID: ' + hostel }] 
+            });
+        }
+
+        // Find students for this hostel
+        const students = await Student.find({ hostel: foundHostel._id })
+            .select('-password')
+            .populate('hostel', 'name location');
+
+        console.log(`Found ${students.length} students for hostel ${foundHostel.name}`);
+
+        success = true;
+        res.json({ success, students });
+    }
+    catch (err) {
+        console.error('Error in getAllStudents:', err.message);
+        res.status(500).json({ 
+            success, 
+            errors: [{ msg: 'Server error: ' + err.message }] 
+        });
+    }
+};
+
+// Keep all other functions the same as before
 const registerStudent = async (req, res) => {
     let success = false;
     
@@ -38,9 +116,9 @@ const registerStudent = async (req, res) => {
             });
         }
 
-        // Find hostel
-        const shostel = await Hostel.findOne({ name: hostel });
-        if (!shostel) {
+        // Find hostel by name
+        const foundHostel = await Hostel.findOne({ name: hostel });
+        if (!foundHostel) {
             return res.status(400).json({ 
                 success, 
                 errors: [{ msg: 'Hostel not found' }] 
@@ -76,7 +154,7 @@ const registerStudent = async (req, res) => {
             dob: new Date(dob),
             cnic,
             user: user._id,
-            hostel: shostel._id
+            hostel: foundHostel._id
         });
 
         await student.save();
@@ -86,23 +164,22 @@ const registerStudent = async (req, res) => {
         
     } catch (err) {
         console.error('Registration error:', err.message);
-        res.status(500).json({ success, errors: 'Server error' });
+        res.status(500).json({ success, errors: [{msg: 'Server error: ' + err.message}] });
     }
 };
+
 const getStudent = async (req, res) => {
     try {
-        // console.log(req.body);
         let success = false;
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            // console.log(errors);
             return res.status(400).json({success, errors: errors.array() });
         }
 
         const { isAdmin } = req.body;
 
         if (isAdmin) {
-            return res.status(400).json({success, errors:  'Admin cannot access this route' });
+            return res.status(400).json({success, errors: [{msg: 'Admin cannot access this route'}] });
         }
 
         const { token } = req.body;
@@ -112,43 +189,18 @@ const getStudent = async (req, res) => {
         const student = await Student.findOne({user: decoded.userId}).select('-password');
         
         if (!student) {
-            return res.status(400).json({success, errors: 'Student does not exist' });
+            return res.status(400).json({success, errors: [{msg: 'Student does not exist'}] });
         }
 
         success = true;
         res.json({success, student });
     } catch (err) {
-        res.status(500).json({success, errors: 'Server error'});
+        console.error('Error in getStudent:', err);
+        res.status(500).json({success, errors: [{msg: 'Server error: ' + err.message}]});
     }
-}
-
-const getAllStudents = async (req, res) => {
-
-    let success = false;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        // console.log(errors);
-        return res.status(400).json({success, errors: errors.array() });
-    }
-
-    let { hostel } = req.body;
-
-    try {
-
-        const hostel = await Hostel.findById(hostel);
-
-        const students = await Student.find({ hostel: hostel.id }).select('-password');
-
-        success = true;
-        res.json({success, students});
-    }
-    catch (err) {
-        res.status(500).json({success, errors: [{msg: 'Server error'}]});
-    }
-}
+};
 
 const updateStudent = async (req, res) => {
-
     let success = false;
     try {
         const student = await Student.findById(req.student.id).select('-password');
@@ -174,17 +226,16 @@ const updateStudent = async (req, res) => {
         success = true;
         res.json({success, student});
     } catch (err) {
-        res.status(500).json({success, errors: [{msg: 'Server error'}]});
+        console.error('Error in updateStudent:', err);
+        res.status(500).json({success, errors: [{msg: 'Server error: ' + err.message}]});
     }
-}
+};
 
 const deleteStudent = async (req, res) => {
     try {
-        // console.log(req.body);
         let success = false;
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            // console.log(errors);
             return res.status(400).json({success, errors: errors.array() });
         }
 
@@ -203,28 +254,35 @@ const deleteStudent = async (req, res) => {
         success = true;
         res.json({success, msg: 'Student deleted successfully' });
     } catch (err) {
-        res.status(500).json({success, errors: [{msg: 'Server error'}]});
+        console.error('Error in deleteStudent:', err);
+        res.status(500).json({success, errors: [{msg: 'Server error: ' + err.message}]});
     }
-}
+};
 
 const csvStudent = async (req, res) => {
     let success = false;
     try {
-        // console.log(req.body);
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            // console.log(errors);
             return res.status(400).json({success, errors: errors.array() });
         }
 
         const { hostel } = req.body;
 
-        const shostel = await Hostel.findById(hostel);
+        // Find hostel by ID
+        const foundHostel = await Hostel.findById(hostel);
 
-        const students = await Student.find({ hostel: shostel.id }).select('-password');
+        if (!foundHostel) {
+            return res.status(400).json({ 
+                success, 
+                errors: [{ msg: 'Hostel not found' }] 
+            });
+        }
+
+        const students = await Student.find({ hostel: foundHostel._id }).select('-password');
 
         students.forEach(student => {
-            student.hostel_name = shostel.name;
+            student.hostel_name = foundHostel.name;
             student.d_o_b = new Date(student.dob).toDateString().slice(4);
             student.cnic_no = student.cnic.slice(0, 5) + '-' + student.cnic.slice(5, 12) + '-' + student.cnic.slice(12);
             student.contact_no = "+92 "+student.contact.slice(1);
@@ -241,9 +299,10 @@ const csvStudent = async (req, res) => {
         success = true;
         res.json({success, csv});
     } catch (err) {
-        res.status(500).json({success, errors: [{msg: 'Server error'}]});
+        console.error('Error in csvStudent:', err);
+        res.status(500).json({success, errors: [{msg: 'Server error: ' + err.message}]});
     }
-}
+};
 
 module.exports = {
     registerStudent,
@@ -252,4 +311,4 @@ module.exports = {
     deleteStudent,
     getAllStudents,
     csvStudent
-}
+};

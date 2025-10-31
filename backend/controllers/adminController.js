@@ -3,6 +3,81 @@ const {validationResult} = require('express-validator');
 const {Admin, User, Hostel} = require('../models');
 const bcrypt = require('bcryptjs');
 
+// ✅ ADDED: Login Admin function
+const loginAdmin = async (req, res) => {
+    try {
+        let success = false;
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({success, errors: errors.array()});
+        }
+
+        const {email, password} = req.body;
+
+        console.log("🔐 [BACKEND] Admin login attempt for:", email);
+
+        try {
+            // Find admin by email and populate user data
+            let admin = await Admin.findOne({email}).populate('user');
+            
+            if (!admin) {
+                console.log("❌ [BACKEND] Admin not found:", email);
+                return res.status(400).json({success, errors: [{msg: 'Invalid credentials'}]});
+            }
+
+            console.log("✅ [BACKEND] Admin found:", admin.name);
+
+            // Find the associated user
+            let user = await User.findById(admin.user);
+            if (!user) {
+                console.log("❌ [BACKEND] User not found for admin:", admin._id);
+                return res.status(400).json({success, errors: [{msg: 'Invalid credentials'}]});
+            }
+
+            // Compare passwords
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                console.log("❌ [BACKEND] Invalid password for admin:", email);
+                return res.status(400).json({success, errors: [{msg: 'Invalid credentials'}]});
+            }
+
+            // Generate token
+            const token = generateToken(user.id, user.isAdmin);
+            console.log("✅ [BACKEND] Admin login successful:", admin.name);
+
+            // Prepare admin data for response (without sensitive info)
+            const adminData = {
+                id: admin._id,
+                _id: admin._id,
+                name: admin.name,
+                email: admin.email,
+                father_name: admin.father_name,
+                contact: admin.contact,
+                address: admin.address,
+                dob: admin.dob,
+                cnic: admin.cnic,
+                hostel: admin.hostel,
+                user: admin.user
+            };
+
+            success = true;
+            res.json({
+                success, 
+                message: 'Admin login successful',
+                admin: adminData,
+                token: token
+            });
+
+        } catch (error) {
+            console.error('💥 [BACKEND] Login process error:', error);
+            res.status(500).json({success, errors: [{msg: 'Server error during login'}]});
+        }
+    } catch (err) {
+        console.error('💥 [BACKEND] Login controller error:', err);
+        res.status(500).json({success: false, errors: [{msg: 'Server error'}]});
+    }
+}
+
 const registerAdmin = async (req, res) => {
     try {
         let success = false;
@@ -186,7 +261,9 @@ const deleteAdmin = async (req, res) => {
     }
 }
 
+// ✅ ADDED: loginAdmin to exports
 module.exports = {
+    loginAdmin,
     registerAdmin,
     updateAdmin,
     getAdmin,

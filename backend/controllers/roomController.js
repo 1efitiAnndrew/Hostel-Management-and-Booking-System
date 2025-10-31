@@ -2,6 +2,7 @@ const Room = require('../models/Room');
 const Hostel = require('../models/Hostel');
 const Booking = require('../models/Booking');
 const { sendEmail } = require('../utils/emailService');
+const mongoose = require('mongoose');
 
 // Helper function to update hostel room counts
 const updateHostelRoomCounts = async (hostelId) => {
@@ -25,6 +26,40 @@ const updateHostelRoomCounts = async (hostelId) => {
         });
     } catch (error) {
         console.error('Error updating hostel room counts:', error);
+    }
+};
+
+// Update booking status when room is assigned
+const updateBookingOnRoomAssignment = async (bookingId, roomId) => {
+    try {
+        const booking = await Booking.findById(bookingId);
+        if (booking) {
+            booking.room = roomId;
+            booking.status = 'confirmed';
+            booking.assignedAt = new Date();
+            await booking.save();
+        }
+    } catch (error) {
+        console.error('Error updating booking on room assignment:', error);
+    }
+};
+
+// Update booking status when student checks in/out
+const updateBookingOnCheckInOut = async (bookingId, action) => {
+    try {
+        const booking = await Booking.findById(bookingId);
+        if (booking) {
+            if (action === 'check-in') {
+                booking.status = 'checked-in';
+                booking.checkedInAt = new Date();
+            } else if (action === 'check-out') {
+                booking.status = 'checked-out';
+                booking.checkedOutAt = new Date();
+            }
+            await booking.save();
+        }
+    } catch (error) {
+        console.error('Error updating booking on check-in/out:', error);
     }
 };
 
@@ -61,6 +96,21 @@ const createRooms = async (req, res) => {
         for (const roomData of rooms) {
             try {
                 console.log('Creating room:', roomData.roomNumber);
+                
+                // Check for duplicate room number in the same hostel
+                const existingRoom = await Room.findOne({
+                    hostel: hostelId,
+                    roomNumber: roomData.roomNumber,
+                    isActive: true
+                });
+                
+                if (existingRoom) {
+                    errors.push({
+                        roomNumber: roomData.roomNumber,
+                        error: `Room number ${roomData.roomNumber} already exists in this hostel`
+                    });
+                    continue; // Skip to next room
+                }
                 
                 const room = new Room({
                     roomNumber: roomData.roomNumber,
@@ -162,13 +212,125 @@ const getAvailableRooms = async (req, res) => {
     }
 };
 
+// Get available rooms for booking (enhanced with date conflict checking)
+const getAvailableRoomsForBooking = async (req, res) => {
+    try {
+        const { hostelId, roomType, checkInDate, checkOutDate } = req.query;
+
+        if (!hostelId || !roomType) {
+            return res.status(400).json({
+                success: false,
+                message: 'Hostel ID and room type are required'
+            });
+        }
+
+        // Find available rooms that match criteria
+        const availableRooms = await Room.find({
+            hostel: hostelId,
+            roomType: roomType,
+            status: 'available',
+            isActive: true,
+            $expr: { $lt: ['$currentOccupancy', '$capacity'] }
+        }).sort({ floor: 1, roomNumber: 1 });
+
+        // If dates provided, check for booking conflicts
+        let filteredRooms = availableRooms;
+        if (checkInDate && checkOutDate) {
+            const conflictingBookings = await Booking.find({
+                hostel: hostelId,
+                roomType: roomType,
+                status: { $in: ['confirmed', 'checked-in'] },
+                $or: [
+                    {
+                        checkInDate: { $lt: new Date(checkOutDate) },
+                        checkOutDate: { $gt: new Date(checkInDate) }
+                    }
+                ]
+            });
+
+            const conflictingRoomIds = conflictingBookings.map(b => b.room?.toString()).filter(Boolean);
+            
+            filteredRooms = availableRooms.filter(room => 
+                !conflictingRoomIds.includes(room._id.toString())
+            );
+        }
+
+        res.json({
+            success: true,
+            count: filteredRooms.length,
+            availableRooms: filteredRooms
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// Get all rooms for a hostel with pagination and filtering
+const getHostelRooms = async (req, res) => {
+    try {
+        const { hostelId } = req.params;
+        const { 
+            status, 
+            roomType, 
+            floor, 
+            page = 1, 
+            limit = 10,
+            sortBy = 'roomNumber',
+            sortOrder = 'asc'
+        } = req.query;
+
+        let filter = { hostel: hostelId, isActive: true };
+        
+        if (status) filter.status = status;
+        if (roomType) filter.roomType = roomType;
+        if (floor) filter.floor = parseInt(floor);
+
+        const sortOptions = {};
+        sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+        const rooms = await Room.find(filter)
+            .populate('hostel', 'name location')
+            .sort(sortOptions)
+            .limit(limit * 1)
+            .skip((page - 1) * limit);
+
+        const total = await Room.countDocuments(filter);
+
+        res.json({
+            success: true,
+            rooms,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(total / limit),
+                totalRooms: total,
+                hasNext: page < Math.ceil(total / limit),
+                hasPrev: page > 1
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 // Get room by ID
 const getRoomById = async (req, res) => {
     try {
         const { roomId } = req.params;
 
         const room = await Room.findById(roomId)
-            .populate('hostel', 'name location amenities');
+            .populate('hostel', 'name location amenities')
+            .populate({
+                path: 'hostel',
+                select: 'name location contact amenities'
+            });
 
         if (!room) {
             return res.status(404).json({
@@ -217,6 +379,50 @@ const updateRoom = async (req, res) => {
         res.json({
             success: true,
             message: 'Room updated successfully',
+            room
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// Update room status specifically
+const updateRoomStatus = async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        const { status } = req.body;
+
+        const validStatuses = ['available', 'occupied', 'reserved', 'maintenance', 'cleaning'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid status. Must be: available, occupied, reserved, maintenance, or cleaning'
+            });
+        }
+
+        const room = await Room.findByIdAndUpdate(
+            roomId,
+            { status },
+            { new: true, runValidators: true }
+        ).populate('hostel');
+
+        if (!room) {
+            return res.status(404).json({
+                success: false,
+                message: 'Room not found'
+            });
+        }
+
+        // Update hostel counts
+        await updateHostelRoomCounts(room.hostel._id);
+
+        res.json({
+            success: true,
+            message: `Room status updated to ${status}`,
             room
         });
 
@@ -284,6 +490,9 @@ const autoAssignRoom = async (req, res) => {
         availableRoom.status = 'reserved';
         availableRoom.currentOccupancy += 1;
         await availableRoom.save();
+
+        // Update booking status
+        await updateBookingOnRoomAssignment(bookingId, availableRoom._id);
 
         // Update hostel counts
         await updateHostelRoomCounts(booking.hostel._id);
@@ -371,6 +580,9 @@ const manualAssignRoom = async (req, res) => {
         room.currentOccupancy += 1;
         await room.save();
 
+        // Update booking status
+        await updateBookingOnRoomAssignment(bookingId, roomId);
+
         await updateHostelRoomCounts(booking.hostel);
 
         // Send room assignment email to student with hostel name
@@ -446,6 +658,9 @@ const checkInStudent = async (req, res) => {
         room.status = 'occupied';
         await room.save();
 
+        // Update booking status
+        await updateBookingOnCheckInOut(bookingId, 'check-in');
+
         await updateHostelRoomCounts(booking.hostel);
 
         // Send check-in confirmation email to student
@@ -514,6 +729,9 @@ const checkOutStudent = async (req, res) => {
         room.currentOccupancy = Math.max(0, room.currentOccupancy - 1);
         await room.save();
 
+        // Update booking status
+        await updateBookingOnCheckInOut(bookingId, 'check-out');
+
         await updateHostelRoomCounts(booking.hostel);
 
         // Send check-out confirmation email to student
@@ -576,14 +794,218 @@ const getOccupancyReport = async (req, res) => {
     }
 };
 
+// Get room utilization statistics
+const getRoomUtilization = async (req, res) => {
+    try {
+        const { hostelId } = req.params;
+
+        const utilization = await Room.aggregate([
+            { $match: { hostel: new mongoose.Types.ObjectId(hostelId), isActive: true } },
+            {
+                $group: {
+                    _id: '$roomType',
+                    totalRooms: { $sum: 1 },
+                    totalCapacity: { $sum: '$capacity' },
+                    totalOccupied: { $sum: '$currentOccupancy' },
+                    availableRooms: {
+                        $sum: {
+                            $cond: [
+                                { $and: [
+                                    { $eq: ['$status', 'available'] },
+                                    { $lt: ['$currentOccupancy', '$capacity'] }
+                                ]},
+                                1,
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    roomType: '$_id',
+                    totalRooms: 1,
+                    totalCapacity: 1,
+                    totalOccupied: 1,
+                    availableRooms: 1,
+                    utilizationRate: {
+                        $multiply: [
+                            { $divide: ['$totalOccupied', '$totalCapacity'] },
+                            100
+                        ]
+                    },
+                    occupancyRate: {
+                        $multiply: [
+                            { $divide: [
+                                { $subtract: ['$totalRooms', '$availableRooms'] },
+                                '$totalRooms'
+                            ]},
+                            100
+                        ]
+                    }
+                }
+            }
+        ]);
+
+        res.json({
+            success: true,
+            utilization
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// Get room dashboard statistics
+const getRoomDashboard = async (req, res) => {
+    try {
+        const { hostelId } = req.params;
+
+        const stats = await Room.aggregate([
+            { $match: { hostel: new mongoose.Types.ObjectId(hostelId), isActive: true } },
+            {
+                $group: {
+                    _id: '$status',
+                    count: { $sum: 1 },
+                    totalCapacity: { $sum: '$capacity' },
+                    totalOccupied: { $sum: '$currentOccupancy' }
+                }
+            }
+        ]);
+
+        const totalRooms = await Room.countDocuments({ 
+            hostel: hostelId, 
+            isActive: true 
+        });
+
+        const availableRooms = await Room.countDocuments({
+            hostel: hostelId,
+            status: 'available',
+            isActive: true,
+            $expr: { $lt: ['$currentOccupancy', '$capacity'] }
+        });
+
+        const dashboard = {
+            totalRooms,
+            availableRooms,
+            byStatus: stats.reduce((acc, stat) => {
+                acc[stat._id] = stat.count;
+                return acc;
+            }, {}),
+            occupancyRate: totalRooms > 0 ? 
+                ((totalRooms - availableRooms) / totalRooms * 100).toFixed(2) : 0
+        };
+
+        res.json({
+            success: true,
+            dashboard
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// Soft delete room (deactivate)
+const deactivateRoom = async (req, res) => {
+    try {
+        const { roomId } = req.params;
+
+        const room = await Room.findById(roomId);
+        if (!room) {
+            return res.status(404).json({
+                success: false,
+                message: 'Room not found'
+            });
+        }
+
+        // Check if room can be deactivated (not occupied)
+        if (room.status === 'occupied' || room.currentOccupancy > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot deactivate an occupied room'
+            });
+        }
+
+        room.isActive = false;
+        room.status = 'maintenance'; // Set to maintenance when deactivated
+        await room.save();
+
+        await updateHostelRoomCounts(room.hostel);
+
+        res.json({
+            success: true,
+            message: 'Room deactivated successfully'
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// Reactivate room
+const reactivateRoom = async (req, res) => {
+    try {
+        const { roomId } = req.params;
+
+        const room = await Room.findByIdAndUpdate(
+            roomId,
+            { 
+                isActive: true,
+                status: 'available'
+            },
+            { new: true, runValidators: true }
+        );
+
+        if (!room) {
+            return res.status(404).json({
+                success: false,
+                message: 'Room not found'
+            });
+        }
+
+        await updateHostelRoomCounts(room.hostel);
+
+        res.json({
+            success: true,
+            message: 'Room reactivated successfully',
+            room
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     createRooms,
     getAvailableRooms,
+    getAvailableRoomsForBooking,
+    getHostelRooms,
     getRoomById,
     updateRoom,
+    updateRoomStatus,
     autoAssignRoom,
     manualAssignRoom,
     checkInStudent,
     checkOutStudent,
-    getOccupancyReport
+    getOccupancyReport,
+    getRoomUtilization,
+    getRoomDashboard,
+    deactivateRoom,
+    reactivateRoom,
+    updateHostelRoomCounts
 };

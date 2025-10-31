@@ -1,8 +1,12 @@
 const express = require('express');
 const { check } = require('express-validator');
-const { registerAdmin, updateAdmin, getAdmin, getHostel, deleteAdmin } = require('../controllers/adminController');
+const { registerAdmin, loginAdmin, updateAdmin, getAdmin, getHostel, deleteAdmin } = require('../controllers/adminController');
 const router = express.Router();
 
+router.post('/login', [
+    check('email', 'Please include a valid email').isEmail(),
+    check('password', 'Password is required').exists()
+], loginAdmin);
 // @route  POST api/admin/register-admin
 // @desc   Register admin
 // @access Public
