@@ -27,6 +27,9 @@ import AdminSettings from './components/Dashboards/AdminDashboard/Settings'
 import AllStudents from "./components/Dashboards/AdminDashboard/AllStudents";
 import AdminMess from "./components/Dashboards/AdminDashboard/MessOff";
 import AdminHostelPage from "./components/Dashboards/AdminDashboard/AdminHostelPage";
+import AdminBookings from "./components/Dashboards/AdminDashboard/AdminBookings";
+import StudentBooking from "./components/Dashboards/StudentDashboard/StudentBooking";
+import StudentRegistrationForm from "./components/LandingSite/AuthPage/StudentRegistrationForm"
 
 function App() {
   return (
@@ -41,6 +44,7 @@ function App() {
             <Route path="login" element={<SignIn />} />
             <Route path="request" element={<RequestAcc />} />
             <Route path="admin-login" element={<AdminSignIn />} />
+             <Route path="register" element={<StudentRegistrationForm />} />
           </Route>
         </Route>
         <Route path="/student-dashboard" element={<Index />}>
@@ -51,6 +55,7 @@ function App() {
           <Route path="suggestions" element={<Suggestions/>} />
           <Route path="invoices" element={<Invoices/>} />
           <Route path="settings" element={<Settings/>} />
+          <Route path="book-hostel" element={<StudentBooking />} />
         </Route>
         <Route path="/admin-dashboard" element={<AdminIndex />}>
           <Route index element={<AdminHome />} />
@@ -63,6 +68,7 @@ function App() {
           <Route path="all-students" element={<AllStudents/>}/>
           <Route path="mess" element={<AdminMess />} />
           <Route path="hostel" element={<AdminHostelPage />} />
+          <Route path="bookings" element={<AdminBookings />} />
         </Route>
       </Routes>
     </>

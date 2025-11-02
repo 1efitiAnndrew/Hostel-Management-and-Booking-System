@@ -12,35 +12,29 @@ About.propTypes = {
 function About() {
   const efiti = {
     name: "Efiti Andrew",
-    designation: "Front-end Engineer",
+    designation: "Back-end Developeer",
     image:
       "https://w7.pngwing.com/pngs/81/570/png-transparent-profile-logo-computer-icons-user-user-blue-heroes-logo-thumbnail.png",
   };
   const okello = {
-    name: "Okello Joseph",
-    designation: "Backend Engineer",
+    name: "Bulega Faisal",
+    designation: "Backend Developer",
     image:
       "https://w7.pngwing.com/pngs/81/570/png-transparent-profile-logo-computer-icons-user-user-blue-heroes-logo-thumbnail.png",
   };
   const nakimuli = {
-    name: "Nakimuli Grace",
+    name: "Linda Cherise",
     designation: "Front-end Developer",
     image:
       "https://w7.pngwing.com/pngs/81/570/png-transparent-profile-logo-computer-icons-user-user-blue-heroes-logo-thumbnail.png",
   };
   const tumusiime = {
-    name: "Tumusiime Sarah",
+    name: "Bwire Melvin Masinde",
     designation: "Database Administrator",
     image:
       "https://w7.pngwing.com/pngs/81/570/png-transparent-profile-logo-computer-icons-user-user-blue-heroes-logo-thumbnail.png",
   };
-  const kizito = {
-    name: "Kizito David",
-    designation: "UI/UX Designer",
-    image:
-      "https://w7.pngwing.com/pngs/81/570/png-transparent-profile-logo-computer-icons-user-user-blue-heroes-logo-thumbnail.png",
-  };
-
+  
   return (
     <div className="relative bg-white overflow-hidden">
       {/* Animated Background Gradient */}
@@ -55,7 +49,6 @@ function About() {
           <TeamCard member={okello} />
           <TeamCard member={nakimuli} />
           <TeamCard member={tumusiime} />
-          <TeamCard member={kizito} />
         </div>
       </div>
       

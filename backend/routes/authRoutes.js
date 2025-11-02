@@ -1,7 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
-const { login, changePassword, verifySession } = require('../controllers/authController');
+const { register, login, changePassword, verifySession } = require('../controllers/authController');
+
+router.post('/register', [
+    check('name', 'Name is required').not().isEmpty(),
+    check('email', 'Please include a valid email').isEmail(),
+    check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
+    check('cms_id', 'CMS ID is required').not().isEmpty(),
+    check('hostel', 'Hostel is required').not().isEmpty(),
+], register);
 
 // @route   POST api/auth/login
 // @desc    Authenticate user and get token

@@ -1,9 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "../../LandingSite/AuthPage/Input";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-const student = JSON.parse(localStorage.getItem("student")) || { _id: "", hostel: "" };
 
 const loader = (
   <svg
@@ -28,6 +26,21 @@ function Suggestions() {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [loading, setLoading] = useState(false);
+  const [student, setStudent] = useState(null);
+
+  // Get student data on component mount
+  useEffect(() => {
+    const studentData = localStorage.getItem("student");
+    if (studentData) {
+      try {
+        const parsedStudent = JSON.parse(studentData);
+        setStudent(parsedStudent);
+      } catch (error) {
+        console.error("Error parsing student data:", error);
+        toast.error("Error loading student data");
+      }
+    }
+  }, []);
 
   const suggestionTitle = {
     name: "suggestion title",
@@ -40,6 +53,35 @@ function Suggestions() {
 
   const registerSuggestions = async (e) => {
     e.preventDefault();
+    
+    // Validate student data
+    if (!student || !student._id) {
+      toast.error("Student information not found. Please log in again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
+      return;
+    }
+
+    // Validate form data
+    if (!title.trim() || !desc.trim()) {
+      toast.error("Please fill in both title and description", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch("http://localhost:3000/api/suggestion/register", {
@@ -47,9 +89,20 @@ function Suggestions() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ student: student._id, hostel: student.hostel, title, description: desc }),
+        body: JSON.stringify({ 
+          student: student._id, 
+          hostel: student.hostel || "", // Provide fallback if hostel is missing
+          title: title.trim(), 
+          description: desc.trim() 
+        }),
       });
+      
       const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+      
       if (data.success) {
         setTitle("");
         setDesc("");
@@ -63,7 +116,7 @@ function Suggestions() {
           theme: "light",
         });
       } else {
-        toast.error(data.errors?.[0]?.msg || "Suggestion registration failed", {
+        toast.error(data.errors?.[0]?.msg || data.message || "Suggestion registration failed", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -74,6 +127,7 @@ function Suggestions() {
         });
       }
     } catch (error) {
+      console.error("Registration error:", error);
       toast.error("Error registering suggestion: " + (error.message || "Something went wrong"), {
         position: "top-right",
         autoClose: 3000,
@@ -86,6 +140,18 @@ function Suggestions() {
     }
     setLoading(false);
   };
+
+  // Show loading or redirect if no student data
+  if (!student) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <p className="text-lg text-gray-600">Loading...</p>
+          <p className="text-sm text-gray-500 mt-2">If this persists, please log in again.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-screen flex flex-col gap-10 items-center justify-center max-h-screen overflow-y-auto bg-white">
@@ -111,11 +177,12 @@ function Suggestions() {
                 className="border sm:text-sm rounded-lg block w-full p-2.5 bg-white border-gray-300 placeholder-gray-500 text-black focus:ring-green-600 focus:border-green-600 outline-none"
                 onChange={(e) => setDesc(e.target.value)}
                 value={desc}
+                rows="4"
               ></textarea>
               <button
                 type="submit"
-                className="w-full text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 border-2 border-green-600 text-lg rounded-lg px-5 py-2.5 mt-5 text-center"
-                disabled={loading}
+                className="w-full text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 border-2 border-green-600 text-lg rounded-lg px-5 py-2.5 mt-5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading || !title.trim() || !desc.trim()}
               >
                 {loading ? (
                   <div>{loader} Making Suggestion...</div>

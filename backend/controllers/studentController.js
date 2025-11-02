@@ -26,6 +26,25 @@ if (!Hostel && mongoose.models.Hostel) {
 console.log('Hostel model available:', !!Hostel);
 console.log('Available mongoose models:', Object.keys(mongoose.models));
 
+// ✅ UPDATED: Helper function to find hostel by ID or name
+const findHostel = async (hostelIdentifier) => {
+    let foundHostel;
+    
+    // Check if hostelIdentifier is a valid MongoDB ObjectId (24 character hex string)
+    if (mongoose.Types.ObjectId.isValid(hostelIdentifier)) {
+        foundHostel = await Hostel.findById(hostelIdentifier);
+    }
+    
+    // If not found by ID or hostelIdentifier is not an ObjectId, try finding by name
+    if (!foundHostel) {
+        foundHostel = await Hostel.findOne({ 
+            name: { $regex: new RegExp(`^${hostelIdentifier}$`, 'i') } // Case-insensitive exact match
+        });
+    }
+
+    return foundHostel;
+};
+
 const getAllStudents = async (req, res) => {
     let success = false;
     
@@ -37,7 +56,8 @@ const getAllStudents = async (req, res) => {
 
         const { hostel } = req.body;
 
-        console.log('Received hostel ID:', hostel);
+        // ✅ UPDATED: Log both ID and name support
+        console.log('Received hostel identifier:', hostel);
 
         // Check if Hostel model is available
         if (!Hostel) {
@@ -53,14 +73,15 @@ const getAllStudents = async (req, res) => {
             }
         }
 
-        // Find the hostel by ID
-        const foundHostel = await Hostel.findById(hostel);
+        // ✅ UPDATED: Find hostel by ID OR name
+        const foundHostel = await findHostel(hostel);
         console.log('Found hostel:', foundHostel);
 
         if (!foundHostel) {
             return res.status(400).json({ 
                 success, 
-                errors: [{ msg: 'Hostel not found with ID: ' + hostel }] 
+                // ✅ UPDATED: Better error message
+                errors: [{ msg: 'Hostel not found with ID/name: ' + hostel }] 
             });
         }
 
@@ -83,7 +104,7 @@ const getAllStudents = async (req, res) => {
     }
 };
 
-// Keep all other functions the same as before
+// ✅ UPDATED: registerStudent function to support both ID and name
 const registerStudent = async (req, res) => {
     let success = false;
     
@@ -98,12 +119,16 @@ const registerStudent = async (req, res) => {
             father_name, contact, address, dob, cnic, hostel, password 
         } = req.body;
 
+        // ✅ UPDATED: Better logging
+        console.log('Registration attempt for hostel:', hostel);
+
         // Check if student exists by CMS ID
         let student = await Student.findOne({ cms_id });
         if (student) {
             return res.status(400).json({ 
                 success, 
-                errors: [{ msg: 'Student already exists' }] 
+                // ✅ UPDATED: Better error message
+                errors: [{ msg: 'Student already exists with this CMS ID' }] 
             });
         }
 
@@ -116,12 +141,15 @@ const registerStudent = async (req, res) => {
             });
         }
 
-        // Find hostel by name
-        const foundHostel = await Hostel.findOne({ name: hostel });
+        // ✅ UPDATED: Find hostel by ID OR name (instead of just name)
+        const foundHostel = await findHostel(hostel);
+        console.log('Found hostel:', foundHostel);
+        
         if (!foundHostel) {
             return res.status(400).json({ 
                 success, 
-                errors: [{ msg: 'Hostel not found' }] 
+                // ✅ UPDATED: Better error message
+                errors: [{ msg: 'Hostel not found. Please check the hostel name or ID: ' + hostel }] 
             });
         }
 
@@ -160,7 +188,19 @@ const registerStudent = async (req, res) => {
         await student.save();
 
         success = true;
-        res.json({ success, student });
+        // ✅ UPDATED: Better response with hostel name
+        res.json({ 
+            success, 
+            student: {
+                id: student._id,
+                name: student.name,
+                cms_id: student.cms_id,
+                email: student.email,
+                room_no: student.room_no,
+                hostel: foundHostel.name
+            },
+            message: `Student registered successfully in ${foundHostel.name}`
+        });
         
     } catch (err) {
         console.error('Registration error:', err.message);
@@ -200,12 +240,25 @@ const getStudent = async (req, res) => {
     }
 };
 
+// ✅ UPDATED: updateStudent function to support both ID and name
 const updateStudent = async (req, res) => {
     let success = false;
     try {
         const student = await Student.findById(req.student.id).select('-password');
 
         const { name, cms_id, room_no, batch, dept, course, email, father_name, contact, address, dob, cnic, user, hostel } = req.body;
+
+        // ✅ UPDATED: If hostel is provided, find it by ID or name
+        if (hostel) {
+            const foundHostel = await findHostel(hostel);
+            if (!foundHostel) {
+                return res.status(400).json({ 
+                    success, 
+                    errors: [{ msg: 'Hostel not found with ID/name: ' + hostel }] 
+                });
+            }
+            student.hostel = foundHostel._id;
+        }
 
         student.name = name;
         student.cms_id = cms_id;
@@ -219,7 +272,6 @@ const updateStudent = async (req, res) => {
         student.address = address;
         student.dob = dob;
         student.cnic = cnic;
-        student.hostel = hostel;
 
         await student.save();
 
@@ -259,6 +311,7 @@ const deleteStudent = async (req, res) => {
     }
 };
 
+// ✅ UPDATED: csvStudent function to support both ID and name
 const csvStudent = async (req, res) => {
     let success = false;
     try {
@@ -269,13 +322,14 @@ const csvStudent = async (req, res) => {
 
         const { hostel } = req.body;
 
-        // Find hostel by ID
-        const foundHostel = await Hostel.findById(hostel);
+        // ✅ UPDATED: Find hostel by ID OR name
+        const foundHostel = await findHostel(hostel);
 
         if (!foundHostel) {
             return res.status(400).json({ 
                 success, 
-                errors: [{ msg: 'Hostel not found' }] 
+                // ✅ UPDATED: Better error message
+                errors: [{ msg: 'Hostel not found with ID/name: ' + hostel }] 
             });
         }
 
@@ -304,11 +358,17 @@ const csvStudent = async (req, res) => {
     }
 };
 
+// ✅ NEW: Additional helper function to get hostel by ID or name (for other routes)
+const getHostelByIdentifier = async (hostelIdentifier) => {
+    return await findHostel(hostelIdentifier);
+};
+
 module.exports = {
     registerStudent,
     getStudent,
     updateStudent,
     deleteStudent,
     getAllStudents,
-    csvStudent
+    csvStudent,
+    getHostelByIdentifier
 };

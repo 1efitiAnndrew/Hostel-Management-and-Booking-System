@@ -139,6 +139,13 @@ function RegisterStudent() {
         body: JSON.stringify(studentData),
       });
       
+      if (!res.ok) {
+        if (res.status === 503) {
+          throw new Error("Database connection failed");
+        }
+        throw new Error("Server error");
+      }
+      
       const data = await res.json();
       console.log("Response data:", data);
 
@@ -291,11 +298,12 @@ function RegisterStudent() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-3">
+            
             {isAdmin ? "Register New Student" : "Student Registration"}
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             {isAdmin 
-              ? "Register a new student in the hostel management system" 
+              ? "Register a new student in Olympia Hostel" 
               : "Create your student account for hostel management"
             }
           </p>
