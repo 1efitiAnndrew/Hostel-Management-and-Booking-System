@@ -58,7 +58,7 @@ function Settings() {
 
   function chngOldPass(e) {
     setOldPass(e.target.value);
-  }
+  }9
 
   return (
     <div className="w-full h-screen pt-20 flex flex-col items-center justify-center">
