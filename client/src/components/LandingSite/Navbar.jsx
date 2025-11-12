@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-function Navbar() {
+function Navbar(){
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
