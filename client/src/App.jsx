@@ -1,4 +1,4 @@
-import "./App.css"; l
+import "./App.css"; 
 import { Route, Routes } from "react-router-dom";
 import About from "./components/LandingSite/About/index";
 import Contact from "./components/LandingSite/Contact/index";
@@ -76,3 +76,4 @@ function App() {
 }
 
 export default App;
+l
