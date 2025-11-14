@@ -30,7 +30,7 @@ import AdminHostelPage from "./components/Dashboards/AdminDashboard/AdminHostelP
 import AdminBookings from "./components/Dashboards/AdminDashboard/AdminBookings";
 import StudentBooking from "./components/Dashboards/StudentDashboard/StudentBooking";
 import StudentRegistrationForm from "./components/LandingSite/AuthPage/StudentRegistrationForm"
-
+import Rooms from './components/Dashboards/AdminDashboard/Rooms'; 
 function App() {
   return (
     <>
@@ -69,6 +69,7 @@ function App() {
           <Route path="mess" element={<AdminMess />} />
           <Route path="hostel" element={<AdminHostelPage />} />
           <Route path="bookings" element={<AdminBookings />} />
+          <Route path="rooms" element={<Rooms />} /> 
         </Route>
       </Routes>
     </>

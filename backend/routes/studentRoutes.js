@@ -1,8 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
-const { registerStudent, getStudent, getAllStudents, updateStudent, deleteStudent, csvStudent } = require('../controllers/studentController');
-
+const { 
+    registerStudent, 
+    getStudent, 
+    getAllStudents, 
+    updateStudent, 
+    deleteStudent, 
+    csvStudent,
+    submitBookingExtension,
+    getStudentBookings,
+    getAvailableRooms,
+    getRoomUtilization
+} = require('../controllers/studentController');
 
 // @route  POST api/student/register-student
 // @desc   Register student
@@ -72,6 +82,46 @@ router.post('/csv', [
     check('hostel', 'Hostel is required').not().isEmpty()
 ], csvStudent);
 
+// ✅ UPDATED BOOKING ROUTES WITH ROOM INTEGRATION
+
+// @route  POST api/student/bookings
+// @desc   Submit booking extension
+// @access Public
+router.post('/bookings', [
+    check('student', 'Student ID is required').not().isEmpty(),
+    check('hostel', 'Hostel is required').not().isEmpty(),
+    check('roomType', 'Room type is required').not().isEmpty(),
+    check('roomNumber', 'Room number is required').not().isEmpty(),
+    check('checkInDate', 'Check-in date is required').not().isEmpty(),
+    check('checkOutDate', 'Check-out date is required').not().isEmpty(),
+    check('duration', 'Duration is required').isInt({ min: 1 }),
+    check('amount', 'Amount is required').isFloat({ min: 0 }),
+    check('paymentMethod', 'Payment method is required').not().isEmpty(),
+    check('paymentProof', 'Payment proof is required').not().isEmpty()
+], submitBookingExtension);
+
+// @route  GET api/student/bookings/:studentId
+// @desc   Get student's bookings
+// @access Public
+router.get('/bookings/:studentId', [
+    check('studentId', 'Valid student ID is required').isMongoId()
+], getStudentBookings);
+
+// @route  POST api/student/available-rooms
+// @desc   Get available rooms for booking
+// @access Public
+router.post('/available-rooms', [
+    check('hostelId', 'Hostel ID is required').not().isEmpty(),
+    check('roomType', 'Room type is required').not().isEmpty(),
+    check('checkInDate', 'Check-in date is required').not().isEmpty(),
+    check('checkOutDate', 'Check-out date is required').not().isEmpty()
+], getAvailableRooms);
+
+// @route  GET api/student/room-utilization/:hostelId
+// @desc   Get room utilization statistics
+// @access Public
+router.get('/room-utilization/:hostelId', [
+    check('hostelId', 'Hostel ID is required').isMongoId()
+], getRoomUtilization);
 
 module.exports = router;
-
