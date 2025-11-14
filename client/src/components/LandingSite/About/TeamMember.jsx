@@ -28,6 +28,7 @@ function TeamCard({ member }) {
       
       {/* CSS for Animations */}
       <style>
+        
         {`
           @keyframes glowPulse {
             0%, 100% {

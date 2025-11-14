@@ -8,6 +8,7 @@
   --secondary: #4b5563; /* gray-600, matches secondary text */
 }
 
+
 body {
   background: linear-gradient(to bottom right, #f0fdf4, #dcfce7, #bbf7d0); /* from-green-50 via-green-100 to-green-200 */
   animation: gradientFlow 20s linear infinite;
