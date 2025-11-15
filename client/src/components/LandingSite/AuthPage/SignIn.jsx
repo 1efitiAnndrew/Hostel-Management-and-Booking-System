@@ -21,49 +21,70 @@ export default function SignIn() {
       password: pass,
     };
 
-    let response = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data)
-    });
-
-    let result = await response.json();
-
-    if (result.success) {
-      localStorage.setItem("token", result.data.token);
-      let student = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/student/get-student", {
+    try {
+      let response = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          isAdmin: result.data.user.isAdmin,
-          token: result.data.token})
+        body: JSON.stringify(data)
       });
 
-      let studentResult = await student.json();
-      if (studentResult.success) {
-        localStorage.setItem("student", JSON.stringify(studentResult.student));
-        navigate("/student-dashboard");
+      let result = await response.json();
+
+      if (result.success) {
+        localStorage.setItem("token", result.data.token);
+        
+        // Get student data with proper error handling
+        try {
+          let studentResponse = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/student/get-student", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${result.data.token}`
+            },
+            body: JSON.stringify({
+              studentId: result.data.user.id,
+              token: result.data.token
+            })
+          });
+
+          if (!studentResponse.ok) {
+            throw new Error(`HTTP error! status: ${studentResponse.status}`);
+          }
+
+          let studentResult = await studentResponse.json();
+          
+          if (studentResult.success) {
+            localStorage.setItem("student", JSON.stringify(studentResult.student));
+            navigate("/student-dashboard");
+          } else {
+            toast.error(studentResult.message || "Failed to get student data");
+            console.log("Student API errors:", studentResult.errors);
+          }
+        } catch (studentError) {
+          console.error("Student data fetch failed:", studentError);
+          toast.error("Failed to fetch student information");
+        }
       } else {
-        // console.log(studentResult.errors)
+        toast.error(
+          result.errors?.[0]?.msg || "Login failed", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
       }
-    } else {
-      toast.error(
-        result.errors[0].msg, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      })
+    } catch (error) {
+      console.error("Login failed:", error);
+      toast.error("Network error - please try again");
+    } finally {
+      setLoader(false);
     }
-    setLoader(false);
   };
 
   const [email, setEmail] = useState("");
@@ -114,7 +135,7 @@ export default function SignIn() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+                d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25 2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
               />
             </svg>
             <Input
@@ -201,7 +222,7 @@ export default function SignIn() {
             theme="light"
           />
           <p className="text-xs md:text-sm font-light text-gray-600">
-            Don’t have an account yet?{" "}
+            Don't have an account yet?{" "}
             <Link
               to="/auth/request"
               className="font-medium hover:underline text-green-700 transition-all duration-300"
