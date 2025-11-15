@@ -7,8 +7,13 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware - MOVE THIS BEFORE DATABASE CONNECTION
+
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:5173'],
+    origin:  process.env.NODE_ENV === 'production' ? false :  [
+        'https://hostel-management-and-booking-system.onrender.com',
+        'https://hostel-management-and-booking-systems.onrender.com',
+        'http://localhost:5173'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
