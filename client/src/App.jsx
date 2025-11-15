@@ -31,6 +31,7 @@ import AdminBookings from "./components/Dashboards/AdminDashboard/AdminBookings"
 import StudentBooking from "./components/Dashboards/StudentDashboard/StudentBooking";
 import StudentRegistrationForm from "./components/LandingSite/AuthPage/StudentRegistrationForm"
 import Rooms from './components/Dashboards/AdminDashboard/Rooms'; 
+import { Routes, Route, Navigate } from 'react-router-dom';
 function App() {
   return (
     <>
