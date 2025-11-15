@@ -99,7 +99,7 @@ function Complaints() {
         description: desc,
         type,
       };
-      const res = await fetch("http://localhost:3000/api/complaint/register", {
+      const res = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/complaint/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -149,7 +149,7 @@ function Complaints() {
     const fetchComplaints = async () => {
       try {
         const cmpln = { student: student._id };
-        const res = await fetch("http://localhost:3000/api/complaint/student", {
+        const res = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/complaint/student", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

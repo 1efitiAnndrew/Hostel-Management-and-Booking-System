@@ -84,7 +84,7 @@ function Suggestions() {
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/api/suggestion/register", {
+      const response = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/suggestion/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

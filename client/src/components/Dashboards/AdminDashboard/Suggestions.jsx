@@ -25,7 +25,7 @@ function Suggestions() {
         return;
       }
 
-      const response = await fetch("http://localhost:3000/api/suggestion/hostel", {
+      const response = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/suggestion/hostel", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,7 +65,7 @@ function Suggestions() {
   const updateSuggestion = async (id) => {
     setLoader(true);
     try {
-      const response = await fetch("http://localhost:3000/api/suggestion/update", {
+      const response = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/suggestion/update", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -26,7 +26,7 @@ function StudentHostelPage() {
         try {
             setLoading(true);
             const queryParams = new URLSearchParams(filterParams).toString();
-            const res = await fetch(`http://localhost:3000/api/hostel?${queryParams}`, {
+            const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/hostel?${queryParams}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -55,7 +55,7 @@ function StudentHostelPage() {
     // Check hostel availability
     const checkAvailability = async (hostelId, roomType) => {
         try {
-            const res = await fetch(`http://localhost:3000/api/hostel/${hostelId}/availability`, {
+            const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/hostel/${hostelId}/availability`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -95,7 +95,7 @@ function StudentHostelPage() {
     const bookHostel = async (hostelId, roomData) => {
         try {
             const studentId = JSON.parse(localStorage.getItem('student'))._id;
-            const res = await fetch(`http://localhost:3000/api/booking/create`, {
+            const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/booking/create`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -223,8 +223,6 @@ function StudentHostelPage() {
                                 <option value="">All Types</option>
                                 <option value="single">Single</option>
                                 <option value="double">Double</option>
-                                <option value="shared">Shared</option>
-                                <option value="suite">Suite</option>
                             </select>
                         </div>
 

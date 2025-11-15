@@ -18,7 +18,7 @@ function AllStudents() {
 
       console.log("Fetching students for hostel:", hostelData._id);
       
-      const response = await fetch("http://localhost:3000/api/student/get-all-students", {
+      const response = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/student/get-all-students", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -56,7 +56,7 @@ function AllStudents() {
         return;
       }
 
-      const res = await fetch("http://localhost:3000/api/student/csv", {
+      const res = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/student/csv", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,7 +123,7 @@ function AllStudents() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/student/delete-student", {
+      const res = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/student/delete-student", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

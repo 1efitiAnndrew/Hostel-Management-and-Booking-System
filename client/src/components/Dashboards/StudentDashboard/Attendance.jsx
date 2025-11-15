@@ -47,7 +47,7 @@ function Attendance() {
 
   const getAttendance = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/attendance/get", {
+      const res = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/attendance/get", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

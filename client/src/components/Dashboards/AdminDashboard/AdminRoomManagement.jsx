@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://hostel-management-and-booking-systems.onrender.com/api';
 
 const AdminRoomManagement = () => {
     const [rooms, setRooms] = useState([]);
@@ -560,7 +560,7 @@ const AdminRoomManagement = () => {
                                                         <option value="single">Single</option>
                                                         <option value="double">Double</option>
                                                         <option value="triple">Triple</option>
-                                                        <option value="shared">Shared</option>
+
                                                     </select>
                                                 </div>
                                                 <div>

@@ -42,14 +42,14 @@ function List() {
   const [invoiceList, setInvoiceList] = useState([
     {
       title: "Mess bill",
-      date: "20-5-2023",
-      amount: "Rs. 690",
+      date: "20-5-2025",
+      amount: "UGX. 130000",
       status: "pending",
     },
     {
       title: "Mess bill",
-      date: "20-5-2023",
-      amount: "Rs. 690",
+      date: "20-5-2025",
+      amount: "UGX. 140000",
       status: "pending",
     },
   ]);
@@ -57,7 +57,7 @@ function List() {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/invoice/student", {
+        const res = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/invoice/student", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -137,7 +137,7 @@ function Home() {
 
   const getAttendance = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/attendance/get", {
+      const res = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/attendance/get", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

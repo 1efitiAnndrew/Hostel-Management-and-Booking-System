@@ -16,19 +16,19 @@ function About() {
     image:
       "https://w7.pngwing.com/pngs/81/570/png-transparent-profile-logo-computer-icons-user-user-blue-heroes-logo-thumbnail.png",
   };
-  const okello = {
+  const bulega = {
     name: "Bulega Faisal",
     designation: "Backend Developer",
     image:
       "https://w7.pngwing.com/pngs/81/570/png-transparent-profile-logo-computer-icons-user-user-blue-heroes-logo-thumbnail.png",
   };
-  const nakimuli = {
+  const linda = {
     name: "Linda Cherise",
     designation: "Front-end Developer",
     image:
       "https://w7.pngwing.com/pngs/81/570/png-transparent-profile-logo-computer-icons-user-user-blue-heroes-logo-thumbnail.png",
   };
-  const tumusiime = {
+  const melvin = {
     name: "Bwire Melvin Masinde",
     designation: "Database Administrator",
     image:
@@ -46,9 +46,9 @@ function About() {
         </h1>
         <div className="flex gap-4 sm:gap-6 flex-wrap justify-center items-center animate-fade-in">
           <TeamCard member={efiti} />
-          <TeamCard member={okello} />
-          <TeamCard member={nakimuli} />
-          <TeamCard member={tumusiime} />
+          <TeamCard member={bulega} />
+          <TeamCard member={linda} />
+          <TeamCard member={melvin} />
         </div>
       </div>
       

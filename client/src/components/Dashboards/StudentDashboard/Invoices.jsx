@@ -47,7 +47,7 @@ function Invoices() {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/invoice/student", {
+        const res = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/invoice/student", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -36,7 +36,7 @@ const Rooms = () => {
   const fetchRooms = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:3000/api/rooms/hostel/${OLYMPIA_HOSTEL_ID}`, {
+      const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/rooms/hostel/${OLYMPIA_HOSTEL_ID}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -106,7 +106,7 @@ const Rooms = () => {
       
       console.log('Sending room data:', roomData); // Debug log
       
-      const res = await fetch(`http://localhost:3000/api/rooms`, { // FIXED: removed /bulk
+      const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/rooms`, { // FIXED: removed /bulk
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -187,7 +187,7 @@ const Rooms = () => {
 
       console.log('Updating room with data:', roomData); // Debug log
       
-      const res = await fetch(`http://localhost:3000/api/rooms/${selectedRoom._id}`, {
+      const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/rooms/${selectedRoom._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -220,7 +220,7 @@ const Rooms = () => {
     if (!window.confirm('Are you sure you want to delete this room?')) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/rooms/${roomId}/deactivate`, { // FIXED: added /deactivate
+      const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/rooms/${roomId}/deactivate`, { // FIXED: added /deactivate
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -334,7 +334,6 @@ const Rooms = () => {
     setNewRooms(updatedRooms);
   };
 
-  // Status badge - FIXED to handle 'cleaning' gracefully
   const getStatusBadge = (status) => {
     const statusColors = {
       available: 'bg-green-100 text-green-800 border-green-200',

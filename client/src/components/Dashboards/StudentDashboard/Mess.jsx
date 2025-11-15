@@ -46,7 +46,7 @@ function Mess() {
         leaving_date: leaveDate,
         return_date: returnDate,
       };
-      const response = await fetch("http://localhost:3000/api/Messoff/request", {
+      const response = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/Messoff/request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +96,7 @@ function Mess() {
       if (!student._id) return;
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:3000/api/Messoff/count", {
+        const res = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/Messoff/count", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

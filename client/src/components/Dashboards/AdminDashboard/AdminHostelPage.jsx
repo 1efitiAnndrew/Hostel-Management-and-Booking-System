@@ -48,7 +48,7 @@ function AdminHostelPage() {
   const getHostels = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:3000/api/rooms`, {
+      const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/rooms`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +80,7 @@ function AdminHostelPage() {
     
     try {
       setRoomsLoading(true);
-      const res = await fetch(`http://localhost:3000/api/rooms/hostel/${hostelId}`, {
+      const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/rooms/hostel/${hostelId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +113,7 @@ function AdminHostelPage() {
         return;
       }
 
-      const res = await fetch(`http://localhost:3000/api/hostel`, {
+      const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/hostel`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -155,7 +155,7 @@ function AdminHostelPage() {
         return;
       }
 
-      const res = await fetch(`http://localhost:3000/api/hostel/${selectedHostel._id}`, {
+      const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/hostel/${selectedHostel._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -190,7 +190,7 @@ function AdminHostelPage() {
     if (!window.confirm('Are you sure you want to delete this hostel?')) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/hostel/${hostelId}`, {
+      const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/hostel/${hostelId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -232,7 +232,7 @@ function AdminHostelPage() {
         }))
       };
       
-      const res = await fetch(`http://localhost:3000/api/rooms/bulk`, {
+      const res = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/rooms/bulk`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

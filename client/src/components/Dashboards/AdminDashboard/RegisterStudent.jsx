@@ -45,7 +45,7 @@ function RegisterStudent() {
 
   const fetchHostels = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/hostel");
+      const res = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/hostel");
       const data = await res.json();
       if (data.success) {
         setHostels(data.hostels);
@@ -131,7 +131,7 @@ function RegisterStudent() {
 
       console.log("Sending student data:", studentData);
 
-      const res = await fetch("http://localhost:3000/api/student/register-student", {
+      const res = await fetch("https://hostel-management-and-booking-systems.onrender.com/api/student/register-student", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

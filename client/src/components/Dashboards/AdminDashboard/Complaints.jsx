@@ -42,7 +42,7 @@ const AdminBookings = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/bookings/stats');
+            const response = await fetch('https://hostel-management-and-booking-systems.onrender.com/api/bookings/stats');
             const data = await response.json();
             if (data.success) {
                 setStats(data.stats);
@@ -60,7 +60,7 @@ const AdminBookings = () => {
             if (filters.hostelId) queryParams.append('hostelId', filters.hostelId);
             if (filters.roomType) queryParams.append('roomType', filters.roomType);
 
-            const response = await fetch(`http://localhost:3000/api/bookings?${queryParams}`);
+            const response = await fetch(`https://hostel-management-and-booking-systems.onrender.com/api/bookings?${queryParams}`);
             const data = await response.json();
             if (data.success) {
                 setBookings(data.bookings);
@@ -75,7 +75,7 @@ const AdminBookings = () => {
     const fetchPendingBookings = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3000/api/bookings/pending');
+            const response = await fetch('https://hostel-management-and-booking-systems.onrender.com/api/bookings/pending');
             const data = await response.json();
             if (data.success) {
                 setPendingBookings(data.bookings);
@@ -89,7 +89,7 @@ const AdminBookings = () => {
 
     const handleApprove = async (bookingId) => {
         try {
-            const response = await fetch('http://localhost:3000/api/bookings/approve', {
+            const response = await fetch('https://hostel-management-and-booking-systems.onrender.com/api/bookings/approve', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ const AdminBookings = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/bookings/reject', {
+            const response = await fetch('https://hostel-management-and-booking-systems.onrender.com/api/bookings/reject', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -156,7 +156,7 @@ const AdminBookings = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/bookings/bulk', {
+            const response = await fetch('https://hostel-management-and-booking-systems.onrender.com/api/bookings/bulk', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

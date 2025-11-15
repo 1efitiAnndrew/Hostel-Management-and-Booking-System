@@ -20,7 +20,7 @@ const StudentRegistrationForm = () => {
         location: 'Makerere University Road',
         description: 'Premium student accommodation with modern amenities',
         contact: '+256779435774',
-        email: 'olympiahostel@example.com'
+        email: 'olympiahostel@gmail.com'
     };
 
     const [formData, setFormData] = useState({
@@ -45,8 +45,7 @@ const StudentRegistrationForm = () => {
 
     // Departments and courses
     const departments = [
-        'Computer Science',
-        'Electrical Engineering',
+        'Information sciences',
         'Mechanical Engineering',
         'Civil Engineering',
         'Business Administration',
@@ -58,14 +57,14 @@ const StudentRegistrationForm = () => {
     ];
 
     const courses = [
-        'Bachelor of Science',
+        'Bachelor of information Systems and technology',
         'Bachelor of Engineering',
-        'Bachelor of Arts',
+        'Bachelor 0f Computer Science',
+        'Bachelor 0f Software Engineering',
         'Bachelor of Medicine',
         'Bachelor of Laws',
         'Master of Science',
-        'Master of Engineering',
-        'PhD'
+        'Master of Engineering'
     ];
 
     const batches = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
@@ -198,7 +197,7 @@ const StudentRegistrationForm = () => {
             console.log('Submitting student data with hostel ID:', actualHostel.id);
 
             // Register student in the database
-            const studentResponse = await fetch('http://localhost:3000/api/student/register-student', {
+            const studentResponse = await fetch('https://hostel-management-and-booking-systems.onrender.com/api/student/register-student', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -222,7 +221,7 @@ const StudentRegistrationForm = () => {
                         hostel: actualHostel.id
                     };
 
-                    const userResponse = await fetch('http://localhost:3000/api/auth/register', {
+                    const userResponse = await fetch('https://hostel-management-and-booking-systems.onrender.com/api/auth/register', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
