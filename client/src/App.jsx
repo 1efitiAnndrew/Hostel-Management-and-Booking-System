@@ -45,6 +45,7 @@ function App() {
             <Route path="request" element={<RequestAcc />} />
             <Route path="admin-login" element={<AdminSignIn />} />
              <Route path="register" element={<StudentRegistrationForm />} />
+              <Route path="*" element={<Navigate to="/auth/login" replace />} />
           </Route>
         </Route>
         <Route path="/student-dashboard" element={<Index />}>
