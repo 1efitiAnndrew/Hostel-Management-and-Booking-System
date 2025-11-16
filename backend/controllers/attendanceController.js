@@ -23,7 +23,7 @@ const markAttendance = async (req, res) => {
         );
         const result = await attendance.save();
         success = true;
-        res.status(201).json(success,result);
+        res.status(201).json({success, result}); // FIXED: Added object wrapper
     } catch (err) {
         res.status(500).json({ success, error: err.message });
     }
@@ -47,17 +47,25 @@ const getAttendance = async (req, res) => {
 }
 
 const updateAttendance = async (req, res) => {
+    let success = false; // ADDED success variable
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(422).json({ errors: errors.array() });
+        return res.status(422).json({ success, errors: errors.array() }); // ADDED success
     }
     const { student, status } = req.body;
     try {
-        const attendance = await Attendance.findOneAndUpdate({ student, date:date.now() }, { status });
-        res.status(200).json(attendance);
+        const attendance = await Attendance.findOneAndUpdate({ 
+            student, 
+            date: { 
+                $gte: new Date().setHours(0, 0, 0, 0), 
+                $lt: new Date().setHours(23, 59, 59, 999) 
+            } 
+        }, { status });
+        success = true;
+        res.status(200).json({ success, attendance }); // ADDED object wrapper
     }
     catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ success, error: err.message });
     }
 }
 
@@ -80,10 +88,28 @@ const getHostelAttendance = async (req, res) => {
     }
 }
 
+// @route   GET api/attendance/get/:studentId
+// @desc    Get attendance for student (GET version)
+// @access  Public
+const getStudentAttendance = async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        const attendance = await Attendance.find({ student: studentId });
+        res.json({ success: true, attendance });
+    } catch (error) {
+        console.error('Error in getStudentAttendance:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error fetching student attendance',
+            error: error.message 
+        });
+    }
+};
+
 module.exports = {
     markAttendance,
     getAttendance,
     updateAttendance,
-    getHostelAttendance
-}
-
+    getHostelAttendance,
+    getStudentAttendance
+};

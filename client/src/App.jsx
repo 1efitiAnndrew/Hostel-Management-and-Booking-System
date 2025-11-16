@@ -32,6 +32,7 @@ import StudentBooking from "./components/Dashboards/StudentDashboard/StudentBook
 import StudentRegistrationForm from "./components/LandingSite/AuthPage/StudentRegistrationForm"
 import Rooms from './components/Dashboards/AdminDashboard/Rooms'; 
 
+
 function App() {
   return (
     <>
@@ -58,6 +59,7 @@ function App() {
           <Route path="invoices" element={<Invoices/>} />
           <Route path="settings" element={<Settings/>} />
           <Route path="book-hostel" element={<StudentBooking />} />
+          <Route path="/student-dashboard/book-hostel" element={<StudentBooking />} />
         </Route>
         <Route path="/admin-dashboard" element={<AdminIndex />}>
           <Route index element={<AdminHome />} />

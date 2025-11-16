@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
-const { markAttendance, getAttendance, updateAttendance, getHostelAttendance } = require('../controllers/attendanceController');
+const { 
+    markAttendance, 
+    getAttendance, 
+    updateAttendance, 
+    getHostelAttendance, 
+    getStudentAttendance 
+} = require('../controllers/attendanceController');
 
 // @route   POST api/attendance/mark
 // @desc    Mark attendance
@@ -11,12 +17,17 @@ router.post('/mark', [
     check('status', 'Status is required').not().isEmpty()
 ], markAttendance);
 
-// @route   GET api/attendance/get
-// @desc    Get attendance
+// @route   POST api/attendance/get
+// @desc    Get attendance (POST version)
 // @access  Public
 router.post('/get', [
     check('student', 'Student is required').not().isEmpty()
 ], getAttendance);
+
+// @route   GET api/attendance/get/:studentId
+// @desc    Get attendance for student (GET version for frontend)
+// @access  Public
+router.get('/get/:studentId', getStudentAttendance); // NEW: GET endpoint for frontend
 
 // @route   PUT api/attendance/update
 // @desc    Update attendance
@@ -26,7 +37,7 @@ router.put('/update', [
     check('status', 'Status is required').not().isEmpty()
 ], updateAttendance);
 
-// @route   GET api/attendance/getHostelAttendance
+// @route   POST api/attendance/getHostelAttendance
 // @desc    Get hostel attendance
 // @access  Public
 router.post('/getHostelAttendance', [

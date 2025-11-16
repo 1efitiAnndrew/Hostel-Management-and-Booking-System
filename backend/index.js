@@ -6,8 +6,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware - MOVE THIS BEFORE DATABASE CONNECTION
-
+// Middleware
 app.use(cors({
     origin: [
         'https://hostel-management-and-booking-system.onrender.com',
@@ -21,15 +20,31 @@ app.use(cors({
 
 app.use(express.json({ extended: false }));
 
-// Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/student', require('./routes/studentRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
-app.use('/api/complaint', require('./routes/complaintRoutes'));
-app.use('/api/invoice', require('./routes/invoiceRoutes'));
-app.use('/api/messoff', require('./routes/messoffRoutes'));
-app.use('/api/request', require('./routes/requestRoutes'));
-app.use('/api/room', require('./routes/roomRoutes'));
+// Import all route files
+const hostelRoutes = require('./routes/hostelRoutes');
+const studentRoutes = require('./routes/studentRoutes');
+const roomRoutes = require('./routes/roomRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
+const invoiceRoutes = require('./routes/invoiceRoutes');
+const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const complaintRoutes = require('./routes/complaintRoutes');
+const messoffRoutes = require('./routes/messoffRoutes');
+const requestRoutes = require('./routes/requestRoutes');
+
+// ✅ MOUNT ROUTES WITH CORRECT PATHS
+app.use('/api/hostels', hostelRoutes);  // NOTE: Changed to plural 'hostels'
+app.use('/api/student', studentRoutes);
+app.use('/api/rooms', roomRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/invoice', invoiceRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/complaint', complaintRoutes);
+app.use('/api/messoff', messoffRoutes);
+app.use('/api/request', requestRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

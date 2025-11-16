@@ -78,7 +78,7 @@ function Sidebar({ links }) {
         }`}
       >
         <Link
-          to={`/admin-dashboard`}
+          to="/student-dashboard"
           className="py-4 px-4 md:py-5 lg:py-4 gap-2 bg-green-950 flex items-center text-2xl"
         >
           <svg

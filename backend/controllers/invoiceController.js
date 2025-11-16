@@ -116,3 +116,21 @@ exports.updateInvoice = async (req, res) => {
         res.status(500).send('Server error');
     }
 }
+
+// @route   GET api/invoice/student/:studentId
+// @desc    Get invoices for student (GET version)
+// @access  Public
+exports.getStudentInvoices = async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        const invoices = await Invoice.find({ student: studentId });
+        res.json({ success: true, invoices });
+    } catch (error) {
+        console.error('Error in getStudentInvoices:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error fetching student invoices',
+            error: error.message 
+        });
+    }
+};

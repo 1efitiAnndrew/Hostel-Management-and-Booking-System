@@ -1,5 +1,6 @@
 const Hostel = require('../models/Hostel');
 const Booking = require('../models/Booking');
+const Room = require('../models/Room'); // ADD THIS IMPORT
 
 // Get all hostels with search and filter
 const getHostels = async (req, res) => {
@@ -308,6 +309,54 @@ const searchRooms = async (req, res) => {
     }
 };
 
+// Get room utilization statistics
+const getRoomUtilization = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Get all rooms for this hostel
+        const rooms = await Room.find({ hostel: id });
+        
+        const utilization = {
+            single: { available: 0, total: 0, utilizationRate: 0 },
+            double: { available: 0, total: 0, utilizationRate: 0 },
+            triple: { available: 0, total: 0, utilizationRate: 0 }
+        };
+
+        rooms.forEach(room => {
+            if (utilization[room.roomType]) {
+                utilization[room.roomType].total++;
+                if (room.status === 'available') {
+                    utilization[room.roomType].available++;
+                }
+            }
+        });
+
+        // Calculate utilization rates
+        Object.keys(utilization).forEach(type => {
+            if (utilization[type].total > 0) {
+                utilization[type].utilizationRate = 
+                    Math.round(((utilization[type].total - utilization[type].available) / utilization[type].total) * 100);
+            }
+        });
+
+        res.json({ 
+            success: true, 
+            utilization: Object.entries(utilization).map(([roomType, stats]) => ({
+                roomType,
+                ...stats
+            }))
+        });
+    } catch (error) {
+        console.error('Error in getRoomUtilization:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error fetching room utilization',
+            error: error.message 
+        });
+    }
+};
+
 module.exports = {
     getHostels,
     getHostel,
@@ -315,5 +364,6 @@ module.exports = {
     createHostel,
     updateHostel,
     deleteHostel,
-    searchRooms
+    searchRooms,
+    getRoomUtilization
 };

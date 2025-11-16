@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = 'https://hostel-management-and-booking-systems.onrender.com/api';
+const API_BASE_URL = 'http://localhost:3000/api';
 
 const StudentBooking = () => {
     const [loading, setLoading] = useState(false);
@@ -28,10 +28,23 @@ const StudentBooking = () => {
     const [serverError, setServerError] = useState(false);
     const [roomAvailability, setRoomAvailability] = useState({});
     const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+    
+    // Mobile Money States
+    const [showMobileMoneyModal, setShowMobileMoneyModal] = useState(false);
+    const [selectedMobileMoney, setSelectedMobileMoney] = useState('');
+    const [mobileMoneyAmount, setMobileMoneyAmount] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [processingPayment, setProcessingPayment] = useState(false);
 
     // Get user data from localStorage
     const user = JSON.parse(localStorage.getItem('user')) || {};
     const student = JSON.parse(localStorage.getItem('student')) || {};
+
+    // Debug useEffect
+    useEffect(() => {
+        console.log('📊 Current Hostel State:', currentHostel);
+        console.log('📊 Room Availability State:', roomAvailability);
+    }, [currentHostel, roomAvailability]);
 
     useEffect(() => {
         fetchCurrentHostel();
@@ -42,14 +55,14 @@ const StudentBooking = () => {
         }
     }, [user.id, student._id]);
 
-    // Fetch Olympia Hostel information
+    // Fetch Olympia Hostel information - UPDATED WITH DATA TRANSFORMATION
     const fetchCurrentHostel = async () => {
         try {
             console.log('🔄 Loading Olympia Hostel information...');
             
             // Try to fetch from API first, then fallback to hardcoded data
             try {
-                const response = await fetch(`${API_BASE_URL}/hostel/68f500b910fe35883fe9f1a4`, {
+                const response = await fetch(`${API_BASE_URL}/hostels/68f500b910fe35883fe9f1a4`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -61,9 +74,31 @@ const StudentBooking = () => {
                     const data = await response.json();
                     if (data.success) {
                         console.log('✅ Hostel data from API:', data.hostel);
-                        setCurrentHostel(data.hostel);
-                        setFormData(prev => ({ ...prev, hostel: data.hostel._id }));
+                        
+                        // Transform API data to match frontend expectations
+                        const transformedHostel = {
+                            _id: data.hostel._id,
+                            name: data.hostel.name,
+                            location: data.hostel.location,
+                            availableRooms: data.hostel.vacant || 0,
+                            totalRooms: data.hostel.rooms || 0,
+                            amenities: data.hostel.amenities && data.hostel.amenities.length > 0 
+                                ? data.hostel.amenities 
+                                : ['WiFi', '24/7 Security', 'Laundry', 'Study Room', 'Common Area'],
+                            contact: {
+                                phone: '+256-700-123456',
+                                email: 'olympiahostel@makerere.com'
+                            },
+                            description: 'Premium student accommodation with modern amenities'
+                        };
+                        
+                        setCurrentHostel(transformedHostel);
+                        setFormData(prev => ({ ...prev, hostel: transformedHostel._id }));
                         setServerError(false);
+                        
+                        // Fetch room data after getting hostel
+                        await fetchRoomTypes();
+                        await fetchRoomUtilization(transformedHostel._id);
                         return;
                     }
                 }
@@ -102,11 +137,11 @@ const StudentBooking = () => {
         }
     };
 
-    // Fetch room utilization statistics
+    // Fetch room utilization statistics - UPDATED WITH BETTER ERROR HANDLING
     const fetchRoomUtilization = async (hostelId) => {
         try {
             console.log('🔄 Fetching room utilization for:', hostelId);
-            const response = await fetch(`${API_BASE_URL}/student/room-utilization/${hostelId}`, {
+            const response = await fetch(`${API_BASE_URL}/hostels/${hostelId}/room-utilization`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -122,12 +157,19 @@ const StudentBooking = () => {
                     const availability = {};
                     data.utilization.forEach(util => {
                         availability[util.roomType] = {
-                            available: util.availableRooms,
-                            total: util.totalRooms,
-                            utilizationRate: util.utilizationRate
+                            available: util.available || 0,
+                            total: util.total || 0,
+                            utilizationRate: util.utilizationRate || 0
                         };
                     });
                     setRoomAvailability(availability);
+                } else {
+                    // Set default availability if no data
+                    setRoomAvailability({
+                        single: { available: 5, total: 15, utilizationRate: 67 },
+                        double: { available: 8, total: 25, utilizationRate: 68 },
+                        triple: { available: 2, total: 10, utilizationRate: 80 }
+                    });
                 }
             } else {
                 console.warn('⚠️ Room utilization endpoint not available, using defaults');
@@ -210,6 +252,7 @@ const StudentBooking = () => {
         }
     };
 
+    // Fetch student bookings
     const fetchMyBookings = async (studentId) => {
         try {
             const response = await fetch(`${API_BASE_URL}/student/bookings/${studentId}`, {
@@ -403,6 +446,67 @@ const StudentBooking = () => {
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    // Mobile Money Payment Functions
+    const handleMobileMoneySelection = (provider) => {
+        setSelectedMobileMoney(provider);
+        setShowMobileMoneyModal(true);
+        setMobileMoneyAmount(formData.amount || '');
+    };
+
+    const processMobileMoneyPayment = async () => {
+        if (!phoneNumber || !mobileMoneyAmount) {
+            toast.error('Please enter phone number and amount');
+            return;
+        }
+
+        if (phoneNumber.length < 10) {
+            toast.error('Please enter a valid phone number');
+            return;
+        }
+
+        setProcessingPayment(true);
+
+        try {
+            // Simulate payment processing
+            toast.info(`💰 ${selectedMobileMoney} Payment: Please check your phone for PIN prompt`, {
+                position: 'top-center',
+                autoClose: 5000
+            });
+
+            // Simulate API call to payment gateway
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            // Simulate successful payment
+            toast.success(`✅ ${selectedMobileMoney} payment successful!`, {
+                position: 'top-center',
+                autoClose: 3000
+            });
+
+            // Set payment proof for the booking
+            setFormData(prev => ({
+                ...prev,
+                paymentMethod: 'mobile_money',
+                paymentProof: `${selectedMobileMoney}_payment_${Date.now()}`,
+                paymentStatus: 'completed'
+            }));
+
+            setShowMobileMoneyModal(false);
+            setPhoneNumber('');
+            
+        } catch (error) {
+            toast.error('Payment failed. Please try again.');
+        } finally {
+            setProcessingPayment(false);
+        }
+    };
+
+    const closeMobileMoneyModal = () => {
+        setShowMobileMoneyModal(false);
+        setSelectedMobileMoney('');
+        setPhoneNumber('');
+        setProcessingPayment(false);
     };
 
     const handleSubmit = async (e) => {
@@ -789,21 +893,56 @@ const StudentBooking = () => {
 
                                     {/* Payment Method */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-3">
                                             Payment Method *
                                         </label>
+                                        
+                                        {/* Traditional Payment Methods */}
                                         <select
                                             name="paymentMethod"
                                             value={formData.paymentMethod}
                                             onChange={handleInputChange}
                                             required
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
                                         >
                                             <option value="cash">Cash</option>
                                             <option value="bank_transfer">Bank Transfer</option>
-                                            <option value="mobile_money">Mobile Money</option>
                                             <option value="online">Online Payment</option>
                                         </select>
+
+                                        {/* Mobile Money Options */}
+                                        <div className="mb-4">
+                                            <p className="text-sm font-medium text-gray-700 mb-2">Mobile Money Options</p>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {/* MTN Mobile Money */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleMobileMoneySelection('MTN')}
+                                                    className="flex items-center justify-center p-3 border-2 border-yellow-400 rounded-lg hover:bg-yellow-50 transition-colors"
+                                                >
+                                                    <div className="text-center">
+                                                        <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-1">
+                                                            <span className="text-white font-bold text-sm">M</span>
+                                                        </div>
+                                                        <span className="text-xs font-medium">MTN Mobile Money</span>
+                                                    </div>
+                                                </button>
+
+                                                {/* Airtel Money */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleMobileMoneySelection('Airtel')}
+                                                    className="flex items-center justify-center p-3 border-2 border-red-400 rounded-lg hover:bg-red-50 transition-colors"
+                                                >
+                                                    <div className="text-center">
+                                                        <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-1">
+                                                            <span className="text-white font-bold text-sm">A</span>
+                                                        </div>
+                                                        <span className="text-xs font-medium">Airtel Money</span>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* Payment Proof */}
@@ -957,6 +1096,86 @@ const StudentBooking = () => {
                     </div>
                 )}
             </div>
+
+            {/* Mobile Money Modal */}
+            {showMobileMoneyModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg max-w-md w-full p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">
+                                {selectedMobileMoney} Mobile Money Payment
+                            </h3>
+                            <button
+                                onClick={closeMobileMoneyModal}
+                                className="text-gray-400 hover:text-gray-600"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Phone Number *
+                                </label>
+                                <input
+                                    type="tel"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    placeholder="e.g., 0772123456"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Amount (UGX) *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formatCurrency(mobileMoneyAmount || 0)}
+                                    readOnly
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 font-semibold"
+                                />
+                            </div>
+
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                                <p className="text-yellow-800 text-sm">
+                                    💡 You will receive a PIN prompt on your phone to complete this transaction.
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={closeMobileMoneyModal}
+                                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={processMobileMoneyPayment}
+                                    disabled={processingPayment || !phoneNumber}
+                                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center justify-center"
+                                >
+                                    {processingPayment ? (
+                                        <>
+                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        'Pay Now'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <ToastContainer />
         </div>
