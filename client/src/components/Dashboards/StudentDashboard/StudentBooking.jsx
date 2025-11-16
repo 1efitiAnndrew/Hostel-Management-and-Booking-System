@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://hostel-management-and-booking-systems.onrender.com/api';
 
 const StudentBooking = () => {
     const [loading, setLoading] = useState(false);
